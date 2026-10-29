@@ -45,6 +45,9 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .btn:hover{border-color:var(--accent);color:var(--accent)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
 .btn.primary:hover{filter:brightness(1.08);color:var(--sheet)}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn.danger:hover{background:var(--bad);border-color:var(--bad);color:var(--sheet)}
+#cancelBtn{font-family:var(--th);padding:7px 12px}
 .progress{height:3px;background:var(--line)}
 .progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
 
@@ -163,17 +166,19 @@ details.palette summary{padding:8px 12px;cursor:pointer;font-size:13.5px;color:v
   .opts,.ex{margin-left:0}
   .brow{grid-template-columns:minmax(0,1fr) 54px}
   .brow .track{grid-column:1 / -1;grid-row:2}
-  .brand .full{display:none}
+  .brand .full,#setTag{display:none}
+  #cancelBtn{padding:7px 10px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 
 <header class="bar">
   <div class="wrap">
-    <div class="brand"><span class="chip">Final</span><span>R&amp;W <span class="full">Skills · Units 3–5</span></span></div>
+    <div class="brand"><span class="chip">Final</span><span>R&amp;W <span class="full">Skills · Units 3–5</span></span><span class="stat" id="setTag"></span></div>
     <div class="spacer"></div>
     <span class="stat" id="answeredStat">0/60 answered</span>
     <span class="timer" id="timer" hidden>120:00</span>
+    <button class="btn danger" id="cancelBtn" hidden>ยกเลิกสอบ</button>
     <button class="btn primary" id="submitBtn" hidden>Submit</button>
   </div>
   <div class="progress"><i id="progressBar"></i></div>
@@ -201,7 +206,8 @@ const CHART_SVG = (() => {
   <text x="${(W+L)/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="Familjen Grotesk, sans-serif">Year</text></svg>`;
 })();
 
-const EXAM = [
+let EXAM;
+const SET_A = [
 { id:"p1", tab:"Part I", title:"Part I · Vocabulary", sub:"Choose the best alternative to complete the sentence. (15 items)",
   groups:[{ title:"Units 3–5 key words", qs:[
   {t:"V", q:"The concert was ___ only ten minutes after the tickets went on sale, so many fans could not get a seat.", opts:["sold-out","devoted","accepting","common"], ex:"<b>sold-out</b> (adj) = ตั๋วขายหมดก่อนการแสดงเริ่ม (Unit 3)"},
@@ -322,15 +328,169 @@ const EXAM = [
 }
 ];
 
+/* ===== SET B · Challenge ===== */
+function makeChart(data,max,step,yLabel,aria,pre){
+  const W=520,H=280,L=56,R=16,T=22,B=44;
+  const x=i=>L+i*(W-L-R)/(data.length-1), y=v=>T+(H-T-B)*(1-v/max);
+  let g='';
+  for(let v=0;v<=max;v+=step){g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${pre}${v}</text>`}
+  const pts=data.map((d,i)=>`${x(i)},${y(d[1])}`).join(' ');
+  let dots='',labels='';
+  data.forEach((d,i)=>{dots+=`<circle cx="${x(i)}" cy="${y(d[1])}" r="4" fill="var(--accent)"/>`;
+    labels+=`<text x="${x(i)}" y="${H-B+18}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${d[0]}</text>`;
+    labels+=`<text x="${x(i)}" y="${y(d[1])-9}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)" font-family="IBM Plex Mono, monospace">${pre}${d[1]}</text>`});
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${aria}">${g}<polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>${dots}${labels}
+  <text x="14" y="${(H-B+T)/2}" transform="rotate(-90 14 ${(H-B+T)/2})" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="Familjen Grotesk, sans-serif">${yLabel}</text>
+  <text x="${(W+L)/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="Familjen Grotesk, sans-serif">Year</text></svg>`;
+}
+const CHART_B = makeChart([[2017,10],[2018,15],[2019,15],[2020,45],[2021,40],[2022,60],[2023,30]],70,10,"Sales (US$ million)",
+  "Line graph of global sales of plant-based seafood from 2017 to 2023, in millions of US dollars: 2017 10, 2018 15, 2019 15, 2020 45, 2021 40, 2022 60, 2023 30.","$");
+
+const SET_B = [
+{ id:"p1", tab:"Part I", title:"Part I · Vocabulary", sub:"Choose the best alternative to complete the sentence. Every option fits the grammar; only one fits the meaning. (15 items)",
+  groups:[{ title:"Units 3–5 key words and word forms", qs:[
+  {t:"V", q:"Professional ___ called the film “slow and confusing,” but ordinary viewers loved it and bought millions of tickets.", opts:["critics","consumers","directors","designers"], ex:"คำใบ้คือการเปรียบเทียบกับ “ordinary viewers” → ต้องเป็นผู้วิจารณ์มืออาชีพ <b>critics</b> ส่วน consumers ก็คือคนทั่วไป จึงไม่เกิดความขัดแย้งในประโยค"},
+  {t:"V", q:"The new phone was first ___ in only twelve countries, but it is now available almost everywhere.", opts:["released","donated","dominated","restored"], ex:"<b>release</b> = ทำให้มีวางจำหน่าย/เปิดตัว ตรงกับ “now available” ส่วน dominate = ครองตลาด ไม่เข้ากับ “in only twelve countries”"},
+  {t:"V", q:"Young consumers expect fashion brands to be more ___ of people of every size, age, and skin color.", opts:["accepting","devoted","potential","common"], ex:"<b>accepting of</b> = ยอมรับ (Unit 3) ส่วน devoted ต้องใช้กับ to (devoted to) จึงผิดทั้งความหมายและบุพบท"},
+  {t:"V", q:"When a company ___ complaints on social media, unhappy customers often share their anger with even more people.", opts:["ignores","deserves","dominates","estimates"], ex:"<b>ignore</b> = เพิกเฉย เป็นสาเหตุให้ลูกค้าโกรธมากขึ้น ตัวลวงอื่นไม่ทำให้เกิดผลนี้"},
+  {t:"V", q:"Because the fish population is no longer ___, scientists cannot predict how many fish there will be next year.", opts:["stable","diverse","severe","essential"], ex:"<b>stable</b> = คงที่ ไม่เปลี่ยนแปลง ถ้าไม่คงที่ก็คาดการณ์ไม่ได้ ส่วน diverse = หลากหลาย ไม่เกี่ยวกับการคาดการณ์จำนวน"},
+  {t:"V", q:"Before you choose which seafood to buy, learn the facts so that you can make an ___ decision.", opts:["informed","essential","individual","official"], ex:"<b>informed decision</b> = การตัดสินใจโดยรู้ข้อเท็จจริง ตรงกับ “learn the facts” ตัวลวง individual/essential เข้ากับ decision ได้ แต่ไม่เกี่ยวกับการหาข้อมูล"},
+  {t:"V", q:"Overfishing has had such a ___ effect on bluefin tuna that some populations may never recover.", opts:["severe","stable","diverse","minor"], ex:"<b>severe</b> = รุนแรงมาก ตรงกับ “may never recover” ส่วน minor = เล็กน้อย ความหมายตรงข้าม"},
+  {t:"V", q:"Many island communities ___ tourism, so when the visitors stopped coming, most families lost their income.", opts:["rely on","build on","take on","move on"], ex:"<b>rely on</b> = พึ่งพา ผลคือเมื่อไม่มีนักท่องเที่ยวก็ขาดรายได้ (Word Partners verb + on, Unit 4)"},
+  {t:"V", q:"After her first film won an award, the young director hoped to ___ that success with an even bigger project.", opts:["build on","rely on","take on","move on"], ex:"<b>build on (success)</b> = ต่อยอดความสำเร็จ ส่วน take on = รับงานเพิ่ม ใช้กับ work ไม่ใช่ success"},
+  {t:"V", q:"When she heard about the terrible accident, she was in a state of ___ and could not say a word.", opts:["shock","emergency","the art","memory"], ex:"<b>state of shock</b> = ตกใจอย่างรุนแรงจากเรื่องไม่คาดคิด ส่วน state of emergency ใช้กับรัฐบาลประกาศภาวะฉุกเฉิน"},
+  {t:"V", q:"Before a race, many runners close their eyes and ___ themselves crossing the finish line in first place.", opts:["visualize","memorize","summarize","socialize"], ex:"<b>visualize</b> = นึกภาพในใจ (-ize, Unit 5) ส่วน memorize = ท่องจำ ใช้กับข้อมูล ไม่ใช่การจินตนาการภาพตัวเอง"},
+  {t:"V", q:"Her ___ to studying is unusual: she learns new material only by teaching it to her classmates.", opts:["approach","route","cycle","symptom"], ex:"<b>approach to</b> = วิธีการ/แนวทาง ตัวลวง route ดูใกล้เคียงแต่หมายถึงเส้นทางเดินทางจริง"},
+  {t:"V", q:"Losing his memory after the virus was ___, yet his daughter says he is now one of the happiest people she knows.", opts:["tragic","minor","memorable","medical"], ex:"<b>tragic</b> = น่าเศร้าอย่างยิ่ง คำว่า “yet” แสดงความขัดแย้งกับ “happiest” ส่วน memorable = น่าจดจำ ไม่สร้างความขัดแย้ง"},
+  {t:"V", q:"Winning a gold medal at the Olympics was the greatest ___ of her sporting career.", opts:["achievement","achiever","achieving","achieved"], ex:"ช่องว่างหลัง “the greatest” ต้องเป็นคำนามที่หมายถึง “ผลของการกระทำ” → <b>achievement</b> (-ment) ส่วน achiever (-er) = คนที่ประสบความสำเร็จ"},
+  {t:"V", q:"A ___ advisor helps people decide how to save, spend, and invest their money wisely.", opts:["financial","finance","financer","financially"], ex:"หน้าคำนาม advisor ต้องใช้คุณศัพท์ → <b>financial</b> (finance + -ial, Unit 4) ส่วน finance advisor ไม่ใช่รูปที่บทเรียนสอน"}
+  ]}]
+},
+{ id:"p2", tab:"Part II", title:"Part II · Reading Comprehension", sub:"Read three unseen passages and answer the questions. (15 items)",
+  groups:[
+  { title:"Passage 1 · Going global", stim:`<h3>How Sushi Went Global</h3>
+<p><span class="pl">1</span>Today you can buy sushi in supermarkets from Brazil to Norway. Yet sixty years ago, few people outside Japan had ever tried it. In fact, many people in Western countries found the idea of eating raw fish strange or even unpleasant.</p>
+<p><span class="pl">2</span>Sushi's journey began in the United States in the 1960s, when a few Japanese restaurants in Los Angeles opened sushi bars. At first, their customers were mainly Japanese businesspeople working in the city. To attract local diners, some chefs began to experiment. The best-known result was the California roll, which uses avocado and cooked crab instead of raw fish and hides the seaweed on the inside. Because it looked and tasted less unfamiliar, it became a “first step” for many Americans.</p>
+<p><span class="pl">3</span>Once sushi had become fashionable in America, it spread quickly to other countries, and chefs in each place adapted it to local tastes. In Brazil, for example, sushi is sometimes topped with tropical fruit, while in parts of Europe it is often served with cream cheese.</p>
+<p><span class="pl">4</span>Not everyone welcomes these changes. Some traditional chefs in Japan feel that foreign versions have lost the simple balance that makes sushi special. Others argue that food has always changed as it travels, and that new versions bring more people to the original. Either way, sushi's success has had a serious side effect: global demand for tuna has contributed to overfishing, especially of bluefin tuna.</p>`,
+    qs:[
+    {t:"R", q:"What is the main purpose of paragraph 2?", opts:["to explain how sushi was changed to attract American diners","to show why Japanese businesspeople disliked local food","to describe how the California roll is prepared in Japan","to compare sushi bars in Los Angeles with those in Tokyo"], ex:"ย่อหน้า 2 เล่าว่าเชฟ “began to experiment” เพื่อ “attract local diners” จนเกิด California roll ตัวลวงอื่นหยิบคำในย่อหน้ามาใช้ แต่บทความไม่ได้พูดถึงเรื่องเหล่านั้น"},
+    {t:"R", q:"According to the passage, why did the California roll become a “first step” for many Americans?", opts:["It seemed less strange to people who were new to sushi.","It was cheaper than the sushi in other Japanese restaurants.","It was the first kind of sushi to be served with raw fish.","It was created by famous American chefs in Los Angeles."], ex:"“Because it looked and tasted less unfamiliar” = ดูแปลกน้อยกว่า ส่วนเรื่องราคาและเชฟชาวอเมริกันไม่มีในบทความ และ California roll ไม่ใช้ปลาดิบ"},
+    {t:"R", q:"Which statement is NOT TRUE according to the passage?", opts:["Sushi became fashionable in Europe before it reached the US.","Some sushi in Brazil is served with tropical fruit on top.","The first sushi customers in Los Angeles were mostly Japanese.","Many Westerners once thought that eating raw fish was unpleasant."], ex:"ย่อหน้า 3: “Once sushi had become fashionable in America, it spread… to other countries” แปลว่าดังในอเมริกาก่อนยุโรป ข้อแรกจึงไม่จริง"},
+    {t:"R", q:"Why does the writer mention overfishing in paragraph 4?", opts:["to show that sushi's global success has had a negative result","to argue that traditional chefs should stop serving bluefin tuna","to explain why sushi is now more expensive than it was before","to prove that foreign versions of sushi are less healthy to eat"], ex:"“sushi's success has had a serious side effect” = ผลเสียของความสำเร็จ ผู้เขียนไม่ได้เสนอให้หยุดขายทูน่าหรือพูดถึงราคา/สุขภาพ"},
+    {t:"R", q:"The “others” in paragraph 4 would most likely agree with which statement?", opts:["Changing a dish can help more people discover the original.","Foreign sushi has lost the balance that makes sushi special.","Sushi should only be prepared by chefs who trained in Japan.","Local versions of sushi are a serious threat to Japanese culture."], ex:"Others คิดว่า “new versions bring more people to the original” ข้อ 2 เป็นความเห็นของ traditional chefs (อีกฝ่าย) ซึ่งเป็นตัวลวงที่ดูเหมือนถูก"}
+    ]},
+  { title:"Passage 2 · Saving our seas", stim:`<h3>Can Fish Farms Save the Ocean?</h3>
+<p><span class="pl">1</span>As wild fish populations decline, many people see aquaculture, or fish farming, as the answer. Since 1990, global production from fish farms has grown more than fivefold, and farms now supply about half of all the fish that people eat. Supporters argue that by raising fish in tanks or ocean pens, we can reduce the pressure on wild species.</p>
+<p><span class="pl">2</span>However, fish farming is not as simple as it seems. Many popular farmed species, such as salmon, are predators. To grow, they must be fed fishmeal made from small wild fish like anchovies and sardines. In the past, it could take several kilograms of wild fish to produce a single kilogram of farmed salmon. In other words, some farms were actually increasing the number of wild fish taken from the sea.</p>
+<p><span class="pl">3</span>Farms can also harm the environment around them. When thousands of fish are kept in a small space, waste and uneaten food collect under the pens and can pollute the water. Diseases and parasites spread easily in crowded conditions and sometimes pass to wild fish swimming nearby.</p>
+<p><span class="pl">4</span>Fortunately, the industry is changing. Many farms now use feed made partly from plants or insects, and species that eat mainly plants, such as tilapia and carp, need little or no fishmeal at all. Scientists are also developing closed systems on land that keep farm waste out of the ocean. Aquaculture, it seems, can help save our seas, but only if it is done carefully.</p>`,
+    qs:[
+    {t:"R", q:"Which sentence best states the main idea of the passage?", opts:["Fish farming can help wild fish, but only if its problems are managed.","Fish farming has already solved the global problem of overfishing.","Fish farms should be closed because they always pollute the ocean.","Farmed salmon is now healthier to eat than wild-caught salmon."], ex:"ประโยคสุดท้าย “can help save our seas, but only if it is done carefully” คือใจความหลัก ตัวลวงข้อ 2 และ 3 สุดโต่งเกินไป (already solved / always pollute)"},
+    {t:"R", q:"According to paragraph 2, how can salmon farming increase the pressure on wild fish?", opts:["Farmed salmon are fed with fishmeal made from small wild fish.","Farmed salmon escape and compete with wild fish for their food.","Salmon farms are often built in places where wild fish breed.","Farmed salmon spread diseases that kill many small wild fish."], ex:"ย่อหน้า 2 พูดถึงอาหาร fishmeal จากปลาเล็กในธรรมชาติ ข้อ 4 เป็นเรื่องโรคซึ่งอยู่ย่อหน้า 3 และบทความไม่ได้บอกว่าโรคฆ่าปลาเล็ก จึงไม่ใช่คำตอบของย่อหน้า 2"},
+    {t:"R", q:"In paragraph 2, the phrase “In other words” introduces ___.", opts:["a restatement of the previous idea in simpler terms","a new example that supports a completely different idea","a contrast with the information that came just before","a prediction about the future of the fish-farming industry"], ex:"<b>In other words</b> = กล่าวอีกนัยหนึ่ง ใช้สรุปความเดิมให้ชัดขึ้น ไม่ใช่ขัดแย้ง (however) หรือคาดการณ์"},
+    {t:"R", q:"What can be inferred about tilapia and carp from paragraph 4?", opts:["Farming them puts less pressure on wild fish than farming salmon.","They are now the most popular farmed fish anywhere in the world.","They can only be raised in closed systems that are built on land.","They never catch diseases, even in very crowded fish farms."], ex:"ปลาเหล่านี้กินพืช ใช้ fishmeal น้อยหรือไม่ใช้ จึงอนุมานได้ว่าใช้ปลาธรรมชาติน้อยกว่าปลาแซลมอน ข้ออื่นบทความไม่ได้กล่าวไว้"},
+    {t:"R", q:"Which phrase best describes the writer's attitude toward aquaculture?", opts:["cautiously optimistic","strongly opposed","mostly uninterested","uncritically enthusiastic"], ex:"ผู้เขียนเห็นทั้งปัญหา (ย่อหน้า 2–3) และทางออก (“Fortunately… but only if…”) = มีความหวังแบบระมัดระวัง ไม่ได้ชื่นชมโดยไม่วิจารณ์"}
+    ]},
+  { title:"Passage 3 · Memory and learning", stim:`<h3>The Forgetting Curve</h3>
+<p><span class="pl">1</span>In the 1880s, the German psychologist Hermann Ebbinghaus carried out an unusual experiment on himself. He memorized long lists of meaningless syllables, such as “WID” and “ZOF,” and then tested how many he could recall after different periods of time. Because the syllables had no meaning, he could study memory without any help from his existing knowledge.</p>
+<p><span class="pl">2</span>His results were surprising. Much of what he learned disappeared very quickly, often more than half within the first day. After that, the rate of forgetting slowed down. When he showed these results on a graph, the line dropped steeply at first and then became almost flat. This pattern is now known as the “forgetting curve.”</p>
+<p><span class="pl">3</span>Ebbinghaus also discovered something more encouraging. Each time he reviewed a list, he forgot it more slowly than before. In addition, reviews that were spread out over several days were more effective than the same number of reviews done all at once. Today, this technique is called spaced repetition, and it forms the basis of many popular language-learning apps.</p>
+<p><span class="pl">4</span>Of course, real learning is different from memorizing nonsense syllables. Information that is meaningful, emotional, or connected to things we already know is usually easier to remember. Still, the basic lesson remains: forgetting is a natural process, and the best way to fight it is not to study for hours the night before an exam, but to review a little at a time over a longer period.</p>`,
+    qs:[
+    {t:"R", q:"Why did Ebbinghaus use meaningless syllables in his experiment?", opts:["so that his existing knowledge would not help him remember","so that the lists would be easier and faster to memorize","because real German words were too difficult to test","because he wanted to invent a new kind of language"], ex:"ย่อหน้า 1: “without any help from his existing knowledge” ตัวลวงข้อ 2 ฟังดูสมเหตุสมผล แต่บทความไม่ได้ให้เหตุผลนี้"},
+    {t:"R", q:"Which description best matches the shape of the forgetting curve?", opts:["a sharp drop at first, followed by a much slower decline","a slow, steady drop that continues at the same rate","a sharp rise at first, followed by a long flat period","a steady drop that stops completely after one hour"], ex:"“dropped steeply at first and then became almost flat” = ลดฮวบช่วงแรก แล้วลดช้าลงมาก"},
+    {t:"R", q:"The word “encouraging” in paragraph 3 is closest in meaning to ___.", opts:["giving hope or confidence","causing worry or fear","hard to understand fully","surprising but not useful"], ex:"ย่อหน้า 2 เป็นข่าวร้าย (ลืมเร็ว) ย่อหน้า 3 เป็นข่าวดี (ทบทวนแล้วลืมช้าลง) <b>encouraging</b> = ทำให้มีกำลังใจ"},
+    {t:"R", q:"According to the passage, which student is using spaced repetition?", opts:["Mai reviews her notes for twenty minutes every day for a week.","Ton studies for six hours straight on the night before his exam.","Nok reads the whole chapter five times in a single afternoon.","Pim writes every new word in her notebook just one time."], ex:"Spaced repetition = ทบทวนกระจายหลายวัน ข้อ Nok ทบทวนหลายครั้งก็จริง แต่ “all at once” ในบ่ายเดียว จึงไม่ใช่"},
+    {t:"R", q:"What is the main purpose of paragraph 4?", opts:["to admit a limit of the study and still give practical advice","to argue that Ebbinghaus's experiment was completely useless","to explain why emotional memories are forgotten very easily","to describe how language-learning apps were first developed"], ex:"“Of course, real learning is different…” = ยอมรับข้อจำกัด แล้ว “Still, the basic lesson remains…” = ให้คำแนะนำ ข้อ 3 ผิดเพราะบทความบอกว่าเรื่องที่มีอารมณ์ร่วม “easier to remember”"}
+    ]}
+  ]
+},
+{ id:"p3", tab:"Part III", title:"Part III · Writing and Language for Writing", sub:"Main idea and details, present perfect, simple past, chart language, by + gerund, cause and effect. (30 items)",
+  groups:[
+  { title:"Main idea and details", stim:`<p class="note">Read the paragraph. Then answer items 31–34.</p>
+<p>(1) In recent years, K-dramas have become popular far beyond South Korea. (2) Streaming services have made it easy for viewers around the world to watch them with subtitles in dozens of languages. (3) Many fans also say the stories feel fresh because they focus on family relationships and slow-building romance. (4) Korean films have also won major international awards, including the Oscar for Best Picture. (5) In addition, the global success of <i>Squid Game</i> has encouraged many viewers to try other Korean series. (6) <span style="display:inline-block;min-width:150px;border-bottom:1.5px solid var(--ink)">&nbsp;</span></p>`,
+    qs:[
+    {t:"M", q:"Which sentence does NOT belong in the paragraph?", fixed:true, a:2, opts:["Sentence (2)","Sentence (3)","Sentence (4)","Sentence (5)"], ex:"ย่อหน้านี้พูดถึง <b>K-dramas</b> (ละครชุด) ประโยค (4) พูดถึงภาพยนตร์เกาหลี แม้เป็นเรื่อง Korean Wave เหมือนกัน แต่ไม่สนับสนุน topic sentence นี้"},
+    {t:"M", q:"Which sentence would be the best concluding sentence (6) that restates the main idea?", opts:["In short, technology and fresh stories have helped K-dramas win fans worldwide.","In short, K-dramas will soon be more popular than any Hollywood TV series.","In short, <i>Squid Game</i> is the most successful K-drama that has ever been made.","In short, everyone should watch K-dramas with subtitles in their own language."], ex:"ข้อแรกสรุปเหตุผลทั้งหมด (streaming + เนื้อเรื่อง) ข้อ 2 เป็นการคาดการณ์ ข้อ 3 เป็นเพียงรายละเอียดเดียว ข้อ 4 เป็นความเห็นใหม่ แม้ขึ้นต้นด้วย In short ก็ไม่ได้ restate"},
+    {t:"M", q:"Which concluding sentence makes a prediction?", opts:["K-dramas are likely to keep attracting new international viewers.","I believe that K-dramas are more interesting than most Western shows.","Why do you think K-dramas have become so popular in other countries?","To sum up, K-dramas have found a large and loyal global audience."], ex:"“are likely to keep…” = คาดการณ์อนาคต ข้อ 2 = opinion ข้อ 3 = question ข้อ 4 = restates the main idea"},
+    {t:"M", q:"What is the function of sentence (1)?", opts:["It states the main idea that the other sentences support.","It gives a specific example that supports the main idea.","It summarizes the details that were mentioned before it.","It introduces a second idea that differs from the first one."], ex:"ประโยค (1) คือ topic sentence บอกใจความหลัก ส่วน (2), (3), (5) เป็น supporting sentences"}
+    ]},
+  { title:"Topic, supporting and concluding sentences",
+    qs:[
+    {t:"M", q:"A student is writing a paragraph that explains a graph. Which is the most effective topic sentence?", opts:["The graph shows that global fish farming rose sharply between 1990 and 2020.","This paragraph is going to talk about a graph that shows fish farming data.","Fish farming is a very interesting topic that many people care about today.","In 2020, fish farms around the world produced about 87 million metric tons."], ex:"ตาม Writing Skill Unit 4: บอกว่ากราฟแสดงอะไร + แนวโน้มหลัก ข้อ 4 เป็นแค่ detail (ตัวเลขปีเดียว) ข้อ 2 และ 3 กว้างและไม่บอกแนวโน้ม"},
+    {t:"M", q:"Topic sentence: “Sleep plays an important role in forming memories.” Which sentence would NOT be a good supporting sentence?", opts:["Many people find it difficult to fall asleep when the weather is hot.","During deep sleep, the brain moves new information into long-term memory.","Students who sleep after studying usually recall more facts the next day.","Losing even one night of sleep can make it harder to learn new information."], ex:"ข้อแรกพูดเรื่องการนอน แต่ไม่เกี่ยวกับ “memory” จึงไม่สนับสนุน topic sentence ตัวลวงนี้เข้าใจผิดได้ง่ายเพราะมีคำว่า sleep"},
+    {t:"M", q:"A paragraph explains three ways social media helps small businesses. It ends: “In conclusion, social media also has many disadvantages.” What is the problem?", opts:["It introduces a new idea instead of concluding the paragraph.","It uses a phrase that cannot begin a concluding sentence.","It makes a prediction instead of restating the main idea.","It asks a question that the reader is not able to answer."], ex:"Concluding sentence ไม่ควรเปิดประเด็นใหม่ (ข้อเสีย) ที่ย่อหน้าไม่ได้พูดถึง “In conclusion” ใช้ขึ้นต้นได้ และประโยคนี้ไม่ใช่การคาดการณ์หรือคำถาม"}
+    ]},
+  { title:"Using the present perfect tense",
+    qs:[
+    {t:"PP", q:"Since the documentary was released, the number of visitors to the reef ___ significantly.", opts:["has increased","increased","had increased","is increasing"], ex:"ประโยคหลักที่มี since + clause ต้องใช้ present perfect → <b>has increased</b> (ประธาน the number ใช้ has) ส่วน clause หลัง since ใช้ simple past (was released) ถูกแล้ว"},
+    {t:"PP", q:"Over 40 million people ___ members of BTS's ARMY since the band first appeared in 2013.", opts:["have become","became","has become","were becoming"], ex:"since 2013 → present perfect; ประธาน 40 million people เป็นพหูพจน์ → <b>have become</b> (ตัวอย่างจากหนังสือ Unit 3)"},
+    {t:"PP", q:"Which sentence uses the present perfect correctly?", opts:["Scientists have studied coral bleaching for more than thirty years.","Scientists have studied coral bleaching for the first time in 1998.","Scientists have been study coral bleaching since many years ago.","Scientists has studied coral bleaching closely since the 1990s."], ex:"ข้อ 2 มีปีที่จบแล้ว (in 1998) ใช้ present perfect ไม่ได้ ข้อ 3 ผิดรูป (been study) ข้อ 4 ประธานพหูพจน์ต้องใช้ have"},
+    {t:"PP", q:"A: “How long ___ English?” B: “I started when I was seven, and I'm still learning.”", opts:["have you studied","did you study","are you studying","have you study"], ex:"เริ่มในอดีตและยังทำอยู่ → <b>How long have you studied…?</b> ส่วน did you study ใช้เมื่อเลิกเรียนไปแล้ว"},
+    {t:"PP", q:"Find the error: “Since she <u>(A) moved</u> to Seoul in 2019, she <u>(B) has learned</u> Korean, <u>(C) has visited</u> many palaces, and <u>(D) has started</u> a blog last year.”", fixed:true, a:3, opts:["(A) moved","(B) has learned","(C) has visited","(D) has started"], ex:"(D) มี “last year” ซึ่งเป็นเวลาที่จบแล้ว ต้องใช้ simple past → <b>started</b> ส่วน (A) moved ถูก เพราะหลัง since ใช้ simple past"}
+    ]},
+  { title:"Using the simple past tense",
+    qs:[
+    {t:"SP", q:"The first telenovela to break through internationally, <i>The Rich Also Cry</i>, ___ in 1979.", opts:["appeared","has appeared","had appeared","was appeared"], ex:"มีปีที่จบแล้ว (in 1979) และไม่มีเหตุการณ์อดีตอื่นให้เทียบ → simple past <b>appeared</b> ส่วน appear เป็น intransitive จึงใช้ passive (was appeared) ไม่ได้"},
+    {t:"SP", q:"When Ebbinghaus ___ a list for the second time, he ___ it more quickly than before.", opts:["reviewed / learned","has reviewed / learned","reviewed / has learned","reviews / learned"], ex:"เล่าเหตุการณ์ในอดีต (ทศวรรษ 1880) ทั้งสองส่วนต้องเป็น simple past"},
+    {t:"SP", q:"According to the graph, total bluefin tuna production ___ between 2005 and 2009.", opts:["fell","has fallen","falls","was fell"], ex:"ช่วงเวลาที่จบแล้ว (2005–2009) → simple past; fall – <b>fell</b> – fallen (Language for Writing Unit 4: verbs มักใช้ simple past)"},
+    {t:"SP", q:"Which sentence uses the tenses correctly?", opts:["Fish farming grew slowly in the 1980s, but it has expanded quickly since then.","Fish farming has grown slowly in the 1980s, but it expanded quickly since then.","Fish farming grew slowly in the 1980s, but it expands quickly since then.","Fish farming was grown slowly in the 1980s, but it has expanded since then."], ex:"in the 1980s → simple past (grew); since then → present perfect (has expanded) ข้อ 2 สลับ tense กัน"}
+    ]},
+  { title:"Describing charts and graphs", stim:`<p class="note">Look at the graph. Then answer items 47–53.</p>
+<h3 style="font-size:16px;margin-bottom:4px">Global Sales of Plant-Based Seafood, 2017–2023</h3>
+<div class="chart">${CHART_B}</div>
+<p class="note" style="margin-top:6px">Source: example data for this practice test.</p>`,
+    qs:[
+    {t:"C", q:"Between 2019 and 2020, sales ___.", opts:["tripled","doubled","quadrupled","halved"], ex:"$15M → $45M = ×3 = <b>tripled</b> (เพิ่มขึ้น 30 ล้าน ทำให้คนเผลอคิดว่า doubled)"},
+    {t:"C", q:"Which sentence correctly describes the change from 2022 to 2023?", opts:["Sales halved, falling from $60 million to $30 million.","Sales halved, falling by $60 million to $30 million.","Sales doubled, falling from $60 million to $30 million.","Sales halved, falling from $30 million to $60 million."], ex:"ลดลงครึ่งหนึ่ง = halved; from + ค่าเริ่ม, to + ค่าสุดท้าย ข้อ 2 ผิดเพราะลดลง <b>by $30 million</b> ไม่ใช่ by $60 million"},
+    {t:"C", q:"Sales ___ slightly in 2021 before reaching their highest point in 2022.", opts:["dipped","peaked","tripled","remained stable"], ex:"$45M → $40M = ลดลงเล็กน้อย → <b>dipped</b>"},
+    {t:"C", q:"In 2018, sales rose ___ $5 million, ___ $15 million.", opts:["by / reaching","to / reaching","by / falling to","to / rising by"], ex:"by + จำนวนที่เปลี่ยน ($5M) แล้วไปถึง (reaching) $15M ข้อ 2 ผิดเพราะ rose to $5 million ไม่ตรงกับกราฟ"},
+    {t:"C", q:"Sales reached a high point ___ $60 million ___ 2022.", opts:["of / in","to / in","of / over","by / on"], ex:"สำนวน <b>reached a high point of</b> + ตัวเลข และใช้ <b>in</b> กับปี (over ใช้กับช่วงเวลา เช่น over five years)"},
+    {t:"C", q:"Which statement is TRUE according to the graph?", opts:["Sales in 2023 were three times higher than in 2017.","Sales in 2023 were exactly the same as sales in 2018.","Sales increased steadily over the whole seven-year period.","Sales reached their lowest point of $15 million in 2019."], ex:"2017 = $10M, 2023 = $30M → ×3 ข้อ 4 หลอกเพราะจุดต่ำสุดคือ $10M ในปี 2017 ข้อ 3 ผิดเพราะมีช่วงลดลง"},
+    {t:"C", q:"Which is the best topic sentence for a paragraph explaining this graph?", opts:["The graph shows that sales generally rose between 2017 and 2023, despite some falls.","The graph shows that sales rose steadily every single year between 2017 and 2023.","The graph shows that sales of plant-based seafood reached $60 million in 2022.","The graph shows that sales of plant-based seafood fell sharply from 2017 to 2023."], ex:"Topic sentence ต้องบอกแนวโน้มหลักที่ถูกต้อง: เพิ่มขึ้นโดยรวมแต่มีช่วงลด ข้อ 3 เป็นเพียง detail ข้อ 2 ผิดเพราะไม่ได้เพิ่มทุกปี"}
+    ]},
+  { title:"By + gerund",
+    qs:[
+    {t:"BG", q:"Ton improved his English ___ to English podcasts on his way to work every day.", opts:["by listening","by listen","for listening","with listening"], ex:"แสดงวิธีที่ทำให้เกิดผล → by + V-ing (<b>by listening</b>) ส่วน for listening บอกจุดประสงค์ ไม่ใช่วิธี"},
+    {t:"BG", q:"Combine the ideas with by + gerund: <i>use plant-based feed / fish farms can reduce pressure on wild fish</i>.", opts:["By using plant-based feed, fish farms can reduce pressure on wild fish.","By using plant-based feed fish farms, can reduce pressure on wild fish.","By use plant-based feed, fish farms can reduce pressure on wild fish.","By using plant-based feed, fish farms can reducing pressure on wild fish."], ex:"By + V-ing ขึ้นต้นประโยค ตามด้วย comma ก่อนประโยคหลัก (ข้อ 2 comma ผิดตำแหน่ง) และหลัง can ใช้ V1"},
+    {t:"BG", q:"Which sentence has the SAME meaning as “If you take notes in your own words, you will understand the lecture better”?", opts:["By taking notes in your own words, you will understand the lecture better.","By understanding the lecture better, you will take notes in your own words.","By taking notes in your own words, you will understood the lecture better.","By the notes in your own words, you will understand the lecture much better."], ex:"การจดโน้ตด้วยคำของตัวเองคือ <b>สาเหตุ</b> ต้องอยู่หลัง by ข้อ 2 สลับเหตุกับผล ความหมายจึงเปลี่ยน"},
+    {t:"BG", q:"In “Nelson Dellis memorized the order of a deck of cards by creating a ‘memory palace,’” which part is the EFFECT?", opts:["Dellis memorized the order of a deck of cards.","Dellis created a “memory palace” in his mind.","Dellis used a deck of cards to build a palace.","Dellis forgot the order of a deck of cards."], ex:"วลี by + gerund (by creating…) คือสาเหตุ ส่วนที่เหลือของประโยค (memorized the order…) คือ <b>ผล</b> แม้จะอยู่ต้นประโยค"}
+    ]},
+  { title:"Cause-and-effect sentences",
+    qs:[
+    {t:"CE", q:"Predators kill sick and weak fish. ___, the ocean stays healthy and stable.", opts:["As a result","Because","Although","Instead"], ex:"ประโยคที่สองเป็นผล → <b>As a result,</b> ส่วน Because เป็นคำเชื่อม clause ใช้ขึ้นต้นประโยคเดี่ยวตามด้วย comma แบบนี้ไม่ได้"},
+    {t:"CE", q:"Which sentence shows the cause-and-effect relationship CORRECTLY?", opts:["Corals turn white because the water becomes too warm.","The water becomes too warm because corals turn white.","Corals turn white, so the water becomes too warm.","Because corals turn white, the water becomes too warm."], ex:"สาเหตุคือน้ำร้อนเกินไป ผลคือปะการังเปลี่ยนเป็นสีขาว ข้ออื่นสลับเหตุกับผล แม้ไวยากรณ์ถูกก็ตาม"},
+    {t:"CE", q:"“AJ remembers every bad choice she has made, so she often feels upset.” Which statement is correct?", opts:["“Remembering every bad choice” is the cause, and “feeling upset” is the effect.","“Feeling upset” is the cause, and “remembering every bad choice” is the effect.","Both parts of the sentence describe causes of AJ's extraordinary memory.","The word “so” introduces the cause of AJ's feelings, not the effect."], ex:"<b>so</b> นำหน้าผล (effect) ดังนั้นส่วนหน้า so คือสาเหตุ"}
+    ]}
+  ]
+}
+];
+
 const TOPIC_NAMES = {V:"Vocabulary",R:"Reading comprehension",M:"Main idea & details",PP:"Present perfect",SP:"Simple past",C:"Charts & graphs",BG:"By + gerund",CE:"Cause & effect"};
 
 /* ---------- STATE ---------- */
 const KEY="rw-final-2569-v1";
-const ALL=[]; EXAM.forEach((p,pi)=>p.groups.forEach(g=>g.qs.forEach(q=>{q.n=ALL.length+1;q.part=pi;ALL.push(q)})));
-let S = {stage:"cover", name:"", mode:"exam", seed:0, answers:{}, part:0, endAt:null, submitted:false};
+let ALL=[]; const SETS={A:SET_A,B:SET_B}; const SET_NAMES={A:"Set A · Standard",B:"Set B · Challenge",M:"Set C · Mixed"};
+/* Mixed set: same 60-item blueprint, each slot drawn from Set A or Set B.
+   A group that carries a stimulus (passage or graph) is taken whole, so its questions keep their text. */
+function buildMixed(seed){
+  const r=rng((seed|0)*7919+13);
+  return SET_A.map((pa,pi)=>{
+    const pb=SET_B[pi];
+    return Object.assign({},pa,{groups:pa.groups.map((ga,gi)=>{
+      const gb=pb.groups[gi];
+      if(ga.stim||gb.stim) return r()<.5?gb:ga;
+      return Object.assign({},ga,{qs:ga.qs.map((qa,qi)=>r()<.5?gb.qs[qi]:qa)});
+    })});
+  });
+}
+let S = {stage:"cover", set:"A", name:"", mode:"exam", seed:0, answers:{}, part:0, endAt:null, submitted:false};
+function useSet(k){EXAM = k==="M" ? buildMixed(S.seed) : (SETS[k]||SET_A); ALL=[]; EXAM.forEach((p,pi)=>p.groups.forEach(g=>g.qs.forEach(q=>{q.n=ALL.length+1;q.part=pi;ALL.push(q)})));}
+useSet("A");
 function load(){try{const r=localStorage.getItem(KEY); if(r) return JSON.parse(r);}catch(e){} return null}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-const saved = load();
+let saved = load();
 
 function rng(seed){return ()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function order(q){ // display order of option indexes
@@ -354,15 +514,20 @@ function renderCover(){
     <p class="meta">ข้อสอบฝึกตาม Guideline: Units 3–5 (Going Global, Saving Our Seas, Memory and Learning) · ปรนัย 60 ข้อ · 2 ชั่วโมง<br>วันสอบจริง: ศุกร์ 9 ตุลาคม 2026 เวลา 9.30–11.30 น.</p>
     <form class="start" id="startForm">
       <div class="field"><label for="nm">ชื่อ / รหัสนักศึกษา (ไม่บังคับ)</label><input id="nm" type="text" autocomplete="name" placeholder="e.g. Max 6501234" value="${esc(S.name||"")}"></div>
+      <div class="modes" role="radiogroup" aria-label="Question set">
+        <label class="mode"><input type="radio" name="set" id="s-a" value="A" ${(S.set||"A")==="A"?"checked":""}><span><b>Set A · Standard</b><small>ระดับพื้นฐาน–ปานกลาง ทบทวนเนื้อหาครบทุกหัวข้อ</small></span></label>
+        <label class="mode"><input type="radio" name="set" id="s-b" value="B" ${S.set==="B"?"checked":""}><span><b>Set B · Challenge</b><small>ยากขึ้น ตัวเลือกยาวเท่ากัน ตัวลวงใกล้เคียงคำตอบ</small></span></label>
+        <label class="mode"><input type="radio" name="set" id="s-m" value="M" ${S.set==="M"?"checked":""}><span><b>Set C · Mixed (ผสม)</b><small>สุ่มผสมข้อจาก Set A และ Set B ครบ 60 ข้อ ได้ชุดใหม่ทุกครั้งที่เริ่มทำ</small></span></label>
+      </div>
       <div class="modes" role="radiogroup" aria-label="Mode">
         <label class="mode"><input type="radio" name="mode" id="m-exam" value="exam" ${S.mode!=="practice"?"checked":""}><span><b>Exam mode</b><small>จับเวลา 120 นาที เฉลยหลังกดส่ง</small></span></label>
         <label class="mode"><input type="radio" name="mode" id="m-prac" value="practice" ${S.mode==="practice"?"checked":""}><span><b>Practice mode</b><small>ไม่จับเวลา เฉลยทันทีทีละข้อ</small></span></label>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button class="btn primary" type="submit">Start the test</button>
-        ${has?`<button class="btn" type="button" id="resumeBtn">Resume (${Object.keys(saved.answers).length}/60 answered)</button>`:""}
+        ${has?`<button class="btn" type="button" id="resumeBtn">Resume ${SET_NAMES[saved.set||"A"].split(" · ")[0]} (${Object.keys(saved.answers).length}/60 answered)</button>`:""}
       </div>
-      <p class="resume">ตัวเลือกจะสลับลำดับใหม่ทุกครั้งที่เริ่มทำ เพื่อให้ฝึกซ้ำได้</p>
+      <p class="resume">มีข้อสอบ 2 ชุด ชุดละ 60 ข้อ (รวม 120 ข้อ) และชุดผสมที่สุ่มข้อจากทั้งสองชุด · ตัวเลือกจะสลับลำดับใหม่ทุกครั้งที่เริ่มทำ</p>
     </form>
   </div>
   <aside class="blueprint" aria-label="Test blueprint">
@@ -372,10 +537,10 @@ function renderCover(){
     <div class="bp-row"><b>III</b><span>Writing &amp; language for writing<small>Topic, supporting &amp; concluding sentences · present perfect · simple past · chart verbs &amp; prepositions · by + gerund · cause and effect</small></span><em>31–60</em></div>
   </aside></section>`;
   $("#startForm").addEventListener("submit",e=>{e.preventDefault();
-    S={stage:"test",name:$("#nm").value.trim(),mode:document.querySelector('input[name=mode]:checked').value,seed:Math.floor(Math.random()*1e6),answers:{},part:0,submitted:false,endAt:null};
+    S={stage:"test",set:document.querySelector('input[name=set]:checked').value,name:$("#nm").value.trim(),mode:document.querySelector('input[name=mode]:checked').value,seed:Math.floor(Math.random()*1e6),answers:{},part:0,submitted:false,endAt:null};
     if(S.mode==="exam") S.endAt=Date.now()+120*60*1000;
-    save(); go();});
-  const rb=$("#resumeBtn"); if(rb) rb.addEventListener("click",()=>{S=saved; go();});
+    useSet(S.set); save(); go();});
+  const rb=$("#resumeBtn"); if(rb) rb.addEventListener("click",()=>{S=saved; useSet(S.set||"A"); go();});
 }
 
 function qHTML(q){
@@ -420,7 +585,7 @@ function resultHTML(){
   const weak=topics.filter(([,r,t])=>r/t<.6).map(x=>x[0]);
   return `<section class="result">
   <div class="score-card">
-    <div><div class="eyebrow">${S.name?esc(S.name)+" · ":""}Your score</div><div class="big">${right}<small> / 60</small></div><div class="pct">${(right/60*100).toFixed(1)}%</div></div>
+    <div><div class="eyebrow">${S.name?esc(S.name)+" · ":""}${SET_NAMES[S.set||"A"]} · Your score</div><div class="big">${right}<small> / 60</small></div><div class="pct">${(right/60*100).toFixed(1)}%</div></div>
     <div class="bars">${per.map(bar).join("")}<div style="height:6px"></div>${topics.map(bar).join("")}</div>
   </div>
   <p class="tip">${weak.length?"ควรทบทวนเพิ่ม: "+weak.join(", ")+" (แถบสีแดง = ถูกน้อยกว่า 60%)":"ทำได้ดีทุกหัวข้อ ลองทำใหม่อีกรอบด้วยลำดับตัวเลือกใหม่"}. เลื่อนลงเพื่อดูเฉลยและคำอธิบายรายข้อ</p>
@@ -454,7 +619,9 @@ function updateChrome(){
   const n=Object.keys(S.answers).length;
   $("#answeredStat").textContent = S.submitted ? "Submitted" : `${n}/60 answered`;
   $("#progressBar").style.width=(n/60*100)+"%";
+  $("#setTag").textContent = S.stage==="test" ? "· "+SET_NAMES[S.set||"A"] : "";
   const sb=$("#submitBtn"); sb.hidden = !(S.stage==="test" && !S.submitted);
+  $("#cancelBtn").hidden = sb.hidden;
   $("#timer").hidden = !(S.stage==="test" && S.mode==="exam" && !S.submitted && S.endAt);
 }
 
@@ -468,6 +635,24 @@ function confirmSubmit(){
 }
 function doSubmit(){S.submitted=true;S.part=0;save();renderTest();window.scrollTo({top:0});}
 
+function confirmCancel(){
+  const n=Object.keys(S.answers).length;
+  const ov=document.createElement("div"); ov.className="sheet-overlay";
+  ov.innerHTML=`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="canT"><h3 id="canT">ยกเลิกการสอบ?</h3><p>${n?`คำตอบ ${n} ข้อที่ทำไว้จะถูกลบทั้งหมด`:"ยังไม่ได้ตอบข้อใดเลย"} และกลับไปหน้าแรกโดยไม่บันทึกคะแนน</p><div class="row"><button class="btn" id="canNo">ทำข้อสอบต่อ</button><button class="btn danger" id="canYes">ยกเลิกสอบ</button></div></div>`;
+  document.body.appendChild(ov); $("#canNo").focus();
+  const close=()=>{ov.remove();document.removeEventListener("keydown",esckey)};
+  function esckey(e){if(e.key==="Escape")close()}
+  document.addEventListener("keydown",esckey);
+  $("#canNo").onclick=close; ov.addEventListener("click",e=>{if(e.target===ov) close()});
+  $("#canYes").onclick=()=>{close(); doCancel();};
+}
+function doCancel(){
+  try{localStorage.removeItem(KEY)}catch(e){}
+  saved=null;
+  S={stage:"cover",set:S.set,name:S.name,mode:S.mode,seed:0,answers:{},part:0,endAt:null,submitted:false};
+  useSet(S.set); go(); window.scrollTo({top:0});
+}
+
 /* timer */
 setInterval(()=>{
   if(S.stage!=="test"||S.mode!=="exam"||S.submitted||!S.endAt) return;
@@ -479,8 +664,9 @@ setInterval(()=>{
 },500);
 
 $("#submitBtn").addEventListener("click",confirmSubmit);
+$("#cancelBtn").addEventListener("click",confirmCancel);
 function go(){ if(S.stage==="cover") renderCover(); else renderTest(); updateChrome(); }
-if(saved && saved.submitted){ S=saved; }
+if(saved && saved.submitted){ S=saved; useSet(S.set||"A"); }
 go();
 </script>
 
