@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ซ้อมสอบ Data Structures (Java Collection)</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5fb;--card:#fff;--tx:#1d1b2e;--mu:#6b6882;--ac:#5b3fd0;--ac2:#ece8ff;--ok:#18794e;--okb:#e3f6ec;--no:#c0392b;--nob:#fdeaea;--bd:#dcd8ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15131f;--card:#201d30;--tx:#ece9fb;--mu:#a29fba;--ac:#9a84ff;--ac2:#2c2750;--ok:#5fd39a;--okb:#16372a;--no:#ff8a7a;--nob:#3b1f1f;--bd:#37324f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15131f;--card:#201d30;--tx:#ece9fb;--mu:#a29fba;--ac:#9a84ff;--ac2:#2c2750;--ok:#5fd39a;--okb:#16372a;--no:#ff8a7a;--nob:#3b1f1f;--bd:#37324f;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Sarabun,system-ui,sans-serif;line-height:1.55}
+main{max-width:720px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.5rem;margin:8px 0 4px}p.sub{color:var(--mu);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 12px;border-radius:99px;cursor:pointer;font:inherit;font-size:.9rem}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.pri{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:11px 20px;font:inherit;font-weight:600;cursor:pointer}
+button.sec{background:var(--ac2);color:var(--ac);border:0;border-radius:10px;padding:11px 20px;font:inherit;font-weight:600;cursor:pointer}
+.bar{height:8px;background:var(--ac2);border-radius:9px;overflow:hidden;margin:6px 0 14px}.bar i{display:block;height:100%;background:var(--ac);transition:width .25s}
+.meta{display:flex;justify-content:space-between;color:var(--mu);font-size:.85rem}
+.q{font-size:1.1rem;font-weight:600;margin:6px 0 12px;white-space:pre-wrap}
+pre{background:var(--ac2);padding:12px;border-radius:10px;overflow-x:auto;font-size:.85rem;margin:0 0 12px;white-space:pre}
+.opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--tx);border:1.5px solid var(--bd);border-radius:10px;padding:11px 14px;margin:8px 0;font:inherit;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--ac)}
+.opt.ok{background:var(--okb);border-color:var(--ok)}.opt.no{background:var(--nob);border-color:var(--no)}
+.exp{margin-top:12px;padding:12px;border-radius:10px;background:var(--ac2);font-size:.95rem}
+.big{font-size:3rem;font-weight:700;color:var(--ac);margin:0}
+.rv{border-top:1px solid var(--bd);padding:10px 0;font-size:.92rem}.rv b{color:var(--no)}
+.top{display:flex;justify-content:flex-end}
+.top button{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:8px;padding:4px 10px;cursor:pointer;font:inherit}
+</style></head><body><main>
+<div class="top"><button id="th">🌓 ธีม</button></div>
+<div id="app"></div></main>
+<script>
+const CH={1:"ครั้งที่ 1 Collection พื้นฐาน",2:"ครั้งที่ 2 ArrayCollection",3:"ครั้งที่ 3 Linked Collection",4:"ครั้งที่ 4 List",5:"ครั้งที่ 5 Stack",6:"ครั้งที่ 6 Queue",7:"ครั้งที่ 7 Priority Queue / Heap"};
+const Q=[
+{c:1,q:"ที่เก็บข้อมูลแบบ Stack มีลักษณะการเข้าออกแบบใด",o:["FIFO","LIFO (เข้าหลังออกก่อน)","สุ่มลำดับ","เรียงตามค่า"],a:1,e:"Stack = Last In First Out ส่วน Queue = First In First Out"},
+{c:1,q:"ต้องการที่เก็บข้อมูลแบบ FIFO และยอมให้เก็บเฉพาะข้อมูลที่ไม่ซ้ำกัน ควรใช้ร่วมกับแบบใด",o:["Queue + Set","Stack + List","Array + Tree","Collection + List"],a:0,e:"Queue ให้ลักษณะ FIFO และ Set ไม่ยอมให้ข้อมูลซ้ำ"},
+{c:1,q:"HashSet ให้ผลดีที่สุดกับปัญหา 15-puzzle ดังนั้นจะดีที่สุดกับทุกปัญหาด้วยใช่หรือไม่",o:["ใช่","ไม่ใช่"],a:1,e:"ประสิทธิภาพของโครงสร้างข้อมูลขึ้นกับลักษณะปัญหา ไม่มีวิธีที่ดีที่สุดกับทุกปัญหา"},
+{c:1,q:"ข้อใดเป็นวิธีสร้างที่เก็บข้อมูล (ไม่ใช่ interface)",o:["Queue","Stack","Array","Set"],a:2,e:"Array, Tree, List(แบบ Linked/Array) เป็นวิธีสร้าง ส่วน Queue Stack Collection Set เป็นลักษณะการใช้งาน"},
+{c:1,q:"ถ้าไม่มีตัวแปร size ในคลาส ArrayCollection เมทโธด size() ใช้วิธีใดหาจำนวนข้อมูล",o:["คืน elementData.length","วิ่งนับจากซ้ายไปขวาจนพบ null","คืนค่า 0 เสมอ","ใช้ recursion"],a:1,e:"นับจากช่องแรกจนพบ null จำนวนที่นับได้คือขนาดจริง และ isEmpty() ตรวจ elementData[0]==null"},
+{c:1,q:"โค้ดนี้พิมพ์ผลสุดท้ายอย่างไร",code:"Collection c = new ArrayCollection(30);\nc.add(\"KMITL\"); c.add(\"LADKRABANG\"); c.add(\"BANGKOK\");\nc.remove(\"LADKRABANG\");\nc.remove(\"KMITL\");\nc.add(\"THAILAND\");\nSystem.out.println(c.size());",o:["1","2","3","4"],a:1,e:"เพิ่ม 3 ตัว ลบ 2 เหลือ 1 แล้วเพิ่ม THAILAND เป็น 2"},
+{c:2,q:"interface Collection สามารถนำไปสร้างเป็น Object ด้วย new ได้โดยตรงหรือไม่",o:["ได้","ไม่ได้ เป็นเพียงรูปแบบของคลาส"],a:1,e:"interface ไม่มี constructor และสร้าง Object ไม่ได้ ต้อง implements ในคลาสก่อน"},
+{c:2,q:"ในคลาส ArrayCollection ตัวแปร size เก็บอะไร",o:["ขนาดอาเรย์ทั้งหมด","จำนวนข้อมูลที่เก็บอยู่จริง","ตำแหน่งสุดท้ายที่ว่าง","ค่าสูงสุด"],a:1,e:"size คือจำนวนข้อมูลจริง ส่วนขนาดอาเรย์คือ elementData.length"},
+{c:2,q:"เมทโธด fixedCapacity() ที่เขียนไว้ทำอะไร",o:["ลบข้อมูลซ้ำ","เพิ่มขนาดอาเรย์เป็น 2 เท่าเมื่ออาเรย์เต็ม","ล้างข้อมูลทั้งหมด","เรียงข้อมูล"],a:1,e:"สร้างอาเรย์ใหม่ขนาด 2 เท่าแล้วคัดลอกข้อมูลเดิมเข้าไป"},
+{c:2,q:"addSet(Object e) ต่างจาก add(Object e) อย่างไร",o:["เพิ่มที่หัวรายการ","เพิ่มเฉพาะค่าที่ยังไม่มีอยู่","เพิ่มได้ครั้งละหลายตัว","เพิ่มโดยไม่เช็ค null"],a:1,e:"ตรวจซ้ำด้วย checkRedundun ก่อน ถ้ายังไม่มีจึงเพิ่ม"},
+{c:2,q:"เมทโธด frequency(e) ในข้อฝึกหัดนี้ ถ้า e ไม่ซ้ำ (พบ 1 ตัว) จะคืนค่าเท่าไร",o:["1","0","-1","null"],a:1,e:"ตามโจทย์ คืน 0 หากไม่ซ้ำ และคืนจำนวนที่ซ้ำเมื่อพบมากกว่า 1 ตัว (ผลรัน F = 0 times, E = 3 times)"},
+{c:2,q:"c1.add(\"A\"); c1.add(\"C\"); c2.add(\"B\"); c1.add(c2); c2.add(c1); แล้ว c1.size() และ c2.size() คือ",o:["3 และ 2","2 และ 1","3 และ 3","4 และ 2"],a:0,e:"c1 มี A, C, c2 = 3 ตัว ส่วน c2 มี B, c1 = 2 ตัว"},
+{c:3,q:"การโยงแบบไม่มีปมหัว คำสั่ง first = new LinkedNode(e, first); คืออะไร",o:["ลบปมแรก","เพิ่มปมใหม่ที่ปมแรก","เพิ่มปมท้ายสุด","นับจำนวนปม"],a:1,e:"สร้างปมใหม่ที่ชี้ไปยังปมแรกเดิม แล้วให้ first ชี้ปมใหม่"},
+{c:3,q:"คำสั่ง p.next = p.next.next; ทำอะไร",o:["ลบปมที่ p ชี้อยู่","ลบปมถัดจากปม p","เพิ่มปมหลัง p","ย้าย p ไปปมถัดไป"],a:1,e:"ข้ามปมถัดไปของ p ทำให้ปมนั้นหลุดจากรายการ ส่วน p = p.next ไม่ได้ลบอะไร"},
+{c:3,q:"การโยงแบบไม่มีปมหัว เมทโธด isEmpty() ตรวจด้วยอะไรได้",o:["first == null","first != null","size == 1","first.next == null"],a:0,e:"ไม่มีปมใดเลยแสดงว่า first เป็น null"},
+{c:3,q:"การสร้าง Collection แบบโยง (linked) เทียบกับแบบ Array ข้อใดถูก",o:["เขียนง่ายกว่าและสิ้นเปลืองที่ว่างมากกว่า","ไม่เก็บช่อง null ที่ว่างเปล่า แต่ต้องเก็บตัวชี้เพิ่ม","เร็วกว่าในทุกเมทโธด","ไม่ต้องใช้ตัวชี้"],a:1,e:"Linked ใช้เนื้อที่ตามจำนวนข้อมูลจริง แต่เขียนซับซ้อนกว่าและมีตัวชี้ต่อปม"},
+{c:3,q:"คลาส LinkedSet (extends LinkedCollection) เมทโธด add ที่เขียนใหม่ทำงานอย่างไร",o:["เพิ่มเสมอ","ถ้า !contains(e) จึงสร้างปมใหม่หลัง header และ ++size","ลบตัวซ้ำออกก่อนทุกครั้ง","เพิ่มท้ายรายการ"],a:1,e:"ป้องกันข้อมูลซ้ำด้วย contains() ก่อนเพิ่ม"},
+{c:3,q:"ls.add(A), add(B), add(C), add(A), add(A) แล้ว ls.size() คือ",o:["5","3","2","1"],a:1,e:"Set ไม่รับตัวซ้ำ จึงเหลือ A, B, C = 3 หลัง remove(A) จะเหลือ 2"},
+{c:4,q:"สิ่งที่ List เพิ่มมาจาก Collection อย่างชัดเจนคืออะไร",o:["เก็บข้อมูลซ้ำได้","ระบุตำแหน่งที่เก็บข้อมูลได้","เก็บข้อมูลหลายชนิด","ไม่มีเมทโธด size"],a:1,e:"List มี add(i,e), remove(i), get(i), set(i,e) ที่ระบุตำแหน่ง"},
+{c:4,q:"List ที่สร้างด้วย Array ตัวแปร size ใช้บอกอะไร",o:["จำนวนช่องทั้งหมดของอาเรย์","จำนวนข้อมูลที่เก็บอยู่","ตำแหน่งแรก","ค่าสูงสุด"],a:1,e:"size คือจำนวนข้อมูลจริง ไม่ใช่ขนาดช่องของอาเรย์"},
+{c:4,q:"การโยงคู่แบบมีปมหัว (LinkedList) ข้อใดถูก",o:["ใช้ตัวชี้เพียงตัวเดียวต่อปม","ใช้ตัวชี้ 2 ตัวต่อปม (prev, next) เสียเนื้อที่เพิ่มแต่เข้าถึงข้อมูลมีประสิทธิภาพ","ไม่มีปมหัว","ใช้ได้เฉพาะ Set"],a:1,e:"แต่ละปมมี prev และ next จึงเดินได้ทั้งสองทิศ"},
+{c:4,q:"ArrayList al: add(A), add(A), add(B), add(C) แล้ว al.set(1,\"X\"); al.remove(1); ค่า al.get(1) และ al.size() คือ",o:["A และ 3","B และ 3","X และ 4","B และ 4"],a:1,e:"เริ่ม [A,A,B,C] หลัง set [A,X,B,C] หลัง remove(1) [A,B,C] จึง get(1)=B, size=3"},
+{c:4,q:"LinkedList [A,B,C,D,E,F] หลัง removeFirst(), removeLast(), removeRange(1,2) เหลือ",o:["[B] [E]","[B] [C]","[C] [D]","[A] [F]"],a:0,e:"[B C D E F] → [B C D E] → ลบ index 1-2 (C, D) เหลือ [B] [E]"},
+{c:4,q:"ในเวกเตอร์เลขศูนย์มาก (sparse vector) ควรเก็บอย่างไรให้มีประสิทธิภาพ",o:["เก็บทุกจำนวนรวมศูนย์","เก็บเป็นคู่ข้อมูล (ตำแหน่ง, ค่า) เฉพาะที่ไม่ใช่ศูนย์","ลบเวกเตอร์ทิ้ง","เก็บแต่ศูนย์"],a:1,e:"ประหยัดเนื้อที่โดยไม่เก็บค่าศูนย์"},
+{c:5,q:"Stack ที่สร้างด้วย Array เมื่อ push แล้วอาเรย์เต็มต้องขยาย ใช้เวลาเท่าใดในรอบนั้น",o:["O(1)","O(n)","O(log n)","O(n²)"],a:1,e:"ต้องคัดลอกข้อมูลทั้ง n ตัวไปอาเรย์ใหม่"},
+{c:5,q:"ArrayStack(3): push A,B,C,E → peek(); pop(); → peek() คือ",o:["E แล้ว C","C แล้ว B","E แล้ว B","A แล้ว B"],a:0,e:"ตัวบนสุดคือ E หลัง pop เหลือ A,B,C จึง peek = C"},
+{c:5,q:"ต่อจากข้อก่อน (เหลือ A,B,C): pop() สองครั้ง แล้ว push(F) แล้ว size() คือ",o:["1","2","3","4"],a:1,e:"pop C, pop B เหลือ A แล้ว push F ได้ A,F จึง size=2 และ peek=F"},
+{c:5,q:"checkParentheses ใช้โครงสร้างข้อมูลใดช่วยตรวจวงเล็บ",o:["Queue","Stack","Set","Heap"],a:1,e:"push วงเล็บเปิด เมื่อเจอวงเล็บปิดให้ pop มาเทียบ และสุดท้าย stack ต้องว่าง"},
+{c:5,q:"ArrayStack ถ้า pop() เขียนเป็น size-- โดยไม่ตั้ง elementData[size] = null ผลเป็นอย่างไร",o:["ทำงานไม่ได้เลย","ทำงานได้แต่มีวัตถุค้างในหน่วยความจำ","ได้ค่าผิด","เกิด exception"],a:1,e:"ตรรกะถูกต้อง แต่ตัวชี้เดิมยังค้างทำให้ GC เก็บคืนไม่ได้"},
+{c:6,q:"ที่เก็บแบบ Queue มีลักษณะแบบใด",o:["LIFO","FIFO","เรียงตามลำดับความสำคัญ","สุ่ม"],a:1,e:"เข้าก่อนออกก่อน (First In First Out)"},
+{c:6,q:"ใน ArrayQueue enqueue(e) ใส่ e ที่ตำแหน่งใด",o:["front","(front + size) % elementData.length","size - 1","0"],a:1,e:"ใช้ circular array จึงต้อง mod ด้วยความยาวอาเรย์"},
+{c:6,q:"หลัง dequeue() ใน ArrayQueue ตัวชี้ front ย้ายไปที่",o:["0","front - 1","(front + 1) % elementData.length","size"],a:2,e:"เลื่อนหน้าไปหนึ่งช่องแบบวน"},
+{c:6,q:"ArrayListQueue.dequeue() ทำอย่างไร",o:["list.remove(list.size()-1)","peek() เก็บค่า แล้ว list.remove(0)","list.clear()","list.get(0) เฉยๆ"],a:1,e:"หัวคิวคือ index 0 อ่านค่าด้วย peek() แล้วลบตำแหน่ง 0"},
+{c:6,q:"อัลกอริทึม Lee ในข้อฝึกหัดใช้ Queue เพื่ออะไร",o:["เรียงลำดับตาราง","ขยายตำแหน่งทีละชั้น (BFS) เพื่อหาเส้นทางสั้นสุด","นับจำนวนกำแพง","สุ่มตาราง"],a:1,e:"ตำแหน่งที่ใกล้ต้นทางจะถูกขยายก่อนตามลำดับ FIFO จึงได้ระยะทางที่ถูกต้อง"},
+{c:7,q:"Heap เก็บ 13, 50, 40, 5, 12, 4 (ไม่ต้องปรับ) ข้อใดถูก",o:["รากคือ 40","ปมพ่อของ 40 คือ 13","13 ไม่มีลูกขวา","ปมพ่อของ 12 คือ 13"],a:1,e:"index: 0=13, 1=50, 2=40, 3=5, 4=12, 5=4 รากคือ 13, พ่อของ 40 คือ 13, 13 มีลูกขวาคือ 40 และพ่อของ 12 คือ 50"},
+{c:7,q:"จาก Heap ข้างต้น 40 (index 2) มีลูกอย่างไร",o:["ไม่มีลูกทั้งสอง","มีลูกซ้าย (4) ไม่มีลูกขวา","มีลูกขวาไม่มีลูกซ้าย","มีลูกครบสองข้าง"],a:1,e:"ลูกซ้าย = index 5 (ค่า 4) ลูกขวา = index 6 ไม่มี"},
+{c:7,q:"Priority Queue ต่างจาก Queue ปกติที่จุดใด",o:["ไม่มี size()","dequeue/peek ได้ข้อมูลที่มีความสำคัญสูงสุดก่อน","เก็บข้อมูลซ้ำไม่ได้","ใช้ Array ไม่ได้"],a:1,e:"เมทโธดอื่นเหมือนกัน แต่ลำดับการดึงออกตามความสำคัญ"},
+{c:7,q:"ArrayPQ (สร้างจาก ArrayList) peek() ใช้เวลาเท่าใด",o:["O(1)","O(n)","O(n log n)","O(log n)"],a:1,e:"ต้องค้นหา maxIndex() โดยไล่ดูทุกตัว จึงเป็น O(n) (ไม่ใช่ O(n log n))"},
+{c:7,q:"Binary Heap สร้าง Priority Queue peek() ใช้เวลาเท่าใด",o:["O(1)","O(n)","O(log n)","O(n log n)"],a:0,e:"ค่าสูงสุดอยู่ที่ราก elementData[0] เสมอ"},
+{c:7,q:"ปรับอาเรย์ 55 14 52 11 1 25 21 36 5 7 8 เป็น Binary Heap (max) ด้วย fixDown ได้ผลใด",o:["55 36 52 14 8 25 21 11 5 7 1","55 52 36 25 21 14 11 8 7 5 1","55 14 52 11 1 25 21 36 5 7 8","52 55 36 14 8 25 21 11 5 7 1"],a:0,e:"fixDown จากปมพ่อสุดท้ายย้อนขึ้นไปรากจนได้ 55 36 52 14 8 25 21 11 5 7 1"},
+{c:7,q:"BinaryHeap: enqueue 5, 3, 99 แล้ว dequeue 3 ครั้ง ลำดับที่ได้คือ",o:["5, 3, 99","99, 5, 3","3, 5, 99","99, 3, 5"],a:1,e:"ออกตามค่าสูงสุดก่อน: 99, 5, 3"}
+];
+let sel=new Set([1,2,3,4,5,6,7]),run=[],i=0,sc=0,wr=[],ans=false;
+const $=s=>document.querySelector(s),app=$("#app");
+const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function sh(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
+function home(){
+ app.innerHTML=`<h1>ซ้อมสอบ Collection / Data Structures</h1><p class="sub">ข้อสอบจากแบบฝึกหัดครั้งที่ 1–7 รวม ${Q.length} ข้อ เลือกบทที่ต้องการ</p>
+ <div class="card"><b>เลือกบท</b><div class="chips">${Object.keys(CH).map(k=>`<button class="chip ${sel.has(+k)?"on":""}" data-k="${k}">${CH[k]} (${Q.filter(x=>x.c==k).length})</button>`).join("")}</div>
+ <button class="sec" id="all">เลือกทั้งหมด</button></div>
+ <button class="pri" id="go">เริ่มทำข้อสอบ</button>`;
+ app.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;sel.has(k)?sel.delete(k):sel.add(k);home()});
+ $("#all").onclick=()=>{sel=new Set([1,2,3,4,5,6,7]);home()};
+ $("#go").onclick=()=>{const p=Q.filter(x=>sel.has(x.c));if(!p.length)return;run=sh(p);i=0;sc=0;wr=[];show()};
+}
+function show(){
+ const q=run[i];ans=false;
+ const idx=sh(q.o.map((_,k)=>k));
+ app.innerHTML=`<div class="meta"><span>ข้อ ${i+1} / ${run.length}</span><span>คะแนน ${sc}</span></div><div class="bar"><i style="width:${i/run.length*100}%"></i></div>
+ <div class="card"><div class="meta">${CH[q.c]}</div><div class="q">${esc(q.q)}</div>${q.code?`<pre>${esc(q.code)}</pre>`:""}
+ <div id="os">${idx.map(k=>`<button class="opt" data-k="${k}">${esc(q.o[k])}</button>`).join("")}</div><div id="ex"></div></div><div id="nx"></div>`;
+ app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>pick(+b.dataset.k));
+}
+function pick(k){
+ if(ans)return;ans=true;const q=run[i],ok=k==q.a;if(ok)sc++;else wr.push({q,k});
+ app.querySelectorAll(".opt").forEach(b=>{b.disabled=true;const v=+b.dataset.k;if(v==q.a)b.classList.add("ok");else if(v==k)b.classList.add("no")});
+ $("#ex").innerHTML=`<div class="exp"><b>${ok?"✅ ถูกต้อง":"❌ ไม่ถูก"}</b><br>${esc(q.e)}</div>`;
+ $("#nx").innerHTML=`<button class="pri" id="n">${i+1<run.length?"ข้อถัดไป":"ดูผลคะแนน"}</button>`;
+ $("#n").onclick=()=>{i++;i<run.length?show():end()};
+}
+function end(){
+ const p=Math.round(sc/run.length*100);
+ app.innerHTML=`<div class="card" style="text-align:center"><p class="sub">ผลคะแนน</p><p class="big">${sc} / ${run.length}</p><p>${p}% ${p>=80?"🎉 เยี่ยมมาก":p>=50?"👍 พอใช้ ทบทวนอีกนิด":"📚 ควรทบทวนอีกครั้ง"}</p></div>
+ ${wr.length?`<div class="card"><b>ข้อที่ผิด (${wr.length})</b>${wr.map(w=>`<div class="rv"><div>${esc(w.q.q)}</div><div><b>คุณตอบ:</b> ${esc(w.q.o[w.k])}</div><div style="color:var(--ok)"><b>เฉลย:</b> ${esc(w.q.o[w.q.a])}</div><div style="color:var(--mu)">${esc(w.q.e)}</div></div>`).join("")}</div>`:""}
+ <button class="pri" id="r">ทำใหม่</button> <button class="sec" id="h">กลับหน้าแรก</button>`;
+ $("#r").onclick=()=>{run=sh(run);i=0;sc=0;wr=[];show()};$("#h").onclick=home;
+}
+$("#th").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).colorScheme.includes("dark")||r.dataset.theme=="dark";r.dataset.theme=d?"light":"dark"};
+home();
+</script></body></html>
