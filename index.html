@@ -1,0 +1,706 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ข้อสอบจำลอง AI Excel Notion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Prompt:wght@500;600&display=swap">
+<style>
+/* Layout: single reading column; home is an index of exam sets, quiz is one question per screen with a numbered navigator. */
+:root {
+  --bg: #F3F6F5;
+  --surface: #FFFFFF;
+  --ink: #12201E;
+  --muted: #55686A;
+  --line: #D5E0DE;
+  --accent: #0B6E66;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEFEC;
+  --good: #17703F;
+  --good-soft: #DDF2E5;
+  --bad: #B3261E;
+  --bad-soft: #FBE3E0;
+  --warn: #8A5200;
+  --warn-soft: #FAEBCB;
+  --font-body: "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, sans-serif;
+  --font-display: "Prompt", "IBM Plex Sans Thai", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1615; --surface: #152120; --ink: #E5EFED; --muted: #93A9A6; --line: #27403D;
+    --accent: #4FC3B7; --accent-ink: #06201D; --accent-soft: #163330;
+    --good: #5BD18B; --good-soft: #12331F; --bad: #FF8F84; --bad-soft: #3B1A16;
+    --warn: #F2B84B; --warn-soft: #382A0D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1615; --surface: #152120; --ink: #E5EFED; --muted: #93A9A6; --line: #27403D;
+  --accent: #4FC3B7; --accent-ink: #06201D; --accent-soft: #163330;
+  --good: #5BD18B; --good-soft: #12331F; --bad: #FF8F84; --bad-soft: #3B1A16;
+  --warn: #F2B84B; --warn-soft: #382A0D;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.65;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.3; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* home */
+.top { display: grid; gap: 6px; margin-bottom: 24px; }
+.eyebrow { font-size: 13px; letter-spacing: .08em; color: var(--accent); font-weight: 600; text-transform: uppercase; }
+.top h1 { font-size: clamp(30px, 7vw, 42px); }
+.lede { color: var(--muted); }
+.opts { display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+.opts fieldset { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; min-width: 0; }
+.opts legend { font-size: 13px; color: var(--muted); padding: 0; margin-bottom: 8px; font-weight: 500; }
+.seg { display: flex; gap: 10px; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; min-width: 0; }
+.seg:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.seg input { margin-top: 6px; accent-color: var(--accent); }
+.seg b { display: block; font-weight: 600; }
+.seg small { display: block; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+.check { display: flex; gap: 10px; align-items: center; cursor: pointer; }
+.check input { accent-color: var(--accent); width: 18px; height: 18px; }
+.sets { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 10px; }
+.set { width: 100%; text-align: left; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.set:hover { border-color: var(--accent); }
+.set .num { font-family: var(--font-display); font-weight: 600; font-size: 20px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-variant-numeric: tabular-nums; }
+.set .body { display: grid; gap: 2px; min-width: 0; }
+.tag { font-size: 12.5px; font-weight: 600; color: var(--accent); letter-spacing: .04em; }
+.name { font-weight: 600; overflow-wrap: anywhere; }
+.meta { font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.go { font-weight: 600; color: var(--accent); font-size: 14px; }
+.btn { border: 1.5px solid var(--accent); background: var(--accent); color: var(--accent-ink); border-radius: 10px; padding: 11px 20px; font-weight: 600; }
+.btn:hover { filter: brightness(1.06); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.block { width: 100%; }
+.note { margin-top: 16px; font-size: 13.5px; color: var(--muted); background: var(--warn-soft); border-radius: 10px; padding: 12px 14px; color: var(--warn); }
+
+/* quiz */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.bar .ttl { min-width: 0; display: grid; }
+.bar .ttl small { color: var(--muted); font-size: 13px; }
+.bar .ttl b { font-weight: 600; overflow-wrap: anywhere; }
+.linkbtn { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 6px 4px; font-size: 14px; }
+.prog { height: 6px; background: var(--line); border-radius: 6px; overflow: hidden; margin-bottom: 18px; }
+.prog i { display: block; height: 100%; background: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 16px; }
+.qno { font-size: 13px; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.qtext { font-size: 18px; font-weight: 600; line-height: 1.55; overflow-wrap: anywhere; }
+.choices { display: grid; gap: 10px; }
+.opt { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; text-align: left; width: 100%; background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt .key { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 13px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.opt .txt { overflow-wrap: anywhere; padding-top: 1px; }
+.opt.picked { border-color: var(--accent); background: var(--accent-soft); }
+.opt.picked .key { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.opt.correct { border-color: var(--good); background: var(--good-soft); }
+.opt.correct .key { background: var(--good); border-color: var(--good); color: var(--surface); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt.wrong .key { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.opt:disabled { cursor: default; color: var(--ink); }
+.fb { border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; background: var(--accent-soft); }
+.fb.ok { background: var(--good-soft); }
+.fb.no { background: var(--bad-soft); }
+.fb .h { font-weight: 600; }
+.fb.ok .h { color: var(--good); }
+.fb.no .h { color: var(--bad); }
+.fb p { font-size: 15px; }
+.flag { margin-top: 4px; font-size: 14px; background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 8px 10px; }
+.nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.navi { margin-top: 18px; display: grid; gap: 10px; }
+.chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; }
+.chip { height: 38px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--surface); font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; padding: 0; }
+.chip.answered { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.chip.ok { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+.chip.no { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.chip.cur { box-shadow: 0 0 0 2px var(--ink); }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+caption { text-align: left; font-size: 12.5px; color: var(--muted); padding: 8px 10px 0; caption-side: top; }
+th, td { padding: 6px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+thead th { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+tr.g td { font-weight: 600; background: var(--bg); }
+tr.t td { font-weight: 600; background: var(--accent-soft); border-bottom: 0; }
+td.ind { padding-left: 28px; }
+td.hl, th.hl { box-shadow: inset 2px 0 0 var(--bad), inset -2px 0 0 var(--bad); }
+
+/* result */
+.score { display: grid; gap: 6px; justify-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px; margin-bottom: 18px; }
+.score .big { font-family: var(--font-display); font-weight: 600; font-size: clamp(44px, 12vw, 64px); line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--accent); }
+.score .big small { font-size: .42em; color: var(--muted); font-weight: 500; }
+.score .pct { color: var(--muted); font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.tabs { display: flex; gap: 8px; margin: 22px 0 12px; }
+.tab { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 500; }
+.tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.rv { display: grid; gap: 12px; }
+.ri { background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; }
+.ri.ok { border-left-color: var(--good); }
+.ri.no { border-left-color: var(--bad); }
+.ri.skip { border-left-color: var(--warn); }
+.ri .st { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ri.ok .st { color: var(--good); }
+.ri.no .st { color: var(--bad); }
+.ri.skip .st { color: var(--warn); }
+.ri .q { font-weight: 600; overflow-wrap: anywhere; }
+.ri .a { font-size: 15px; overflow-wrap: anywhere; }
+.ri .a b { font-weight: 600; }
+.ri .a.you { color: var(--bad); }
+.ri .a.right { color: var(--good); }
+.ri .w { font-size: 14.5px; color: var(--muted); }
+
+/* modal */
+#modal { position: fixed; inset: 0; background: rgba(8, 16, 15, .55); display: grid; place-items: center; padding: 16px; z-index: 20; }
+#modal .box { background: var(--surface); border-radius: 14px; padding: 20px; max-width: 420px; width: 100%; display: grid; gap: 16px; border: 1px solid var(--line); }
+#modal .row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+@media (max-width: 480px) {
+  .card { padding: 16px; }
+  .set { grid-template-columns: auto minmax(0, 1fr); }
+  .set .go { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .prog i { transition: width .25s ease; }
+  .opt, .chip, .set { transition: border-color .12s ease, background-color .12s ease; }
+}
+</style>
+
+<div class="wrap" id="app"></div>
+<div id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mtext">
+  <div class="box">
+    <p id="mtext"></p>
+    <div class="row">
+      <button class="btn ghost" id="mno" type="button">ยกเลิก</button>
+      <button class="btn" id="myes" type="button">ตกลง</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  };
+  var Q = function (q, o, a, w, f, t) { return { q: q, o: o, a: a, w: w, f: f || '', t: t || '' }; };
+
+  var TABLES = {
+    p7: {
+      cap: 'Count of Total (ตัวเลขจากภาพในข้อสอบ)',
+      head: ['Row Labels', 'Cash', 'Credit card', 'Ewallet'],
+      rows: [['Member', '168', '172', '161'], ['Normal', '176', '139', '184'], ['Grand Total', '344', '311', '345', 't']]
+    },
+    p9: {
+      cap: 'Count of Total แสดงเป็นเปอร์เซ็นต์ (ตัวเลขจากภาพในข้อสอบ, คอลัมน์ Cash คือส่วนที่กรอบแดง)',
+      head: ['Row Labels', 'Cash', 'Credit card', 'Ewallet'],
+      hl: 1,
+      rows: [['Member', '33.53%', '34.33%', '32.14%'], ['Normal', '35.27%', '27.86%', '36.87%'], ['Grand Total', '34.40%', '31.10%', '34.50%', 't']]
+    },
+    p10: {
+      cap: 'ตารางตามภาพในข้อสอบ',
+      head: ['Row Labels', 'Sum of Gross income', 'Average of Rating'],
+      rows: [
+        ['Bangkok', '34.24%', '7.07', 'g'],
+        ['Electronic accessories', '5.87%', '6.75'], ['Fashion accessories', '6.68%', '7.44'], ['Health and beauty', '5.14%', '6.99'],
+        ['Home and lifestyle', '4.30%', '7.06'], ['Sports and travel', '4.88%', '7.03'],
+        ['Chiangmai', '32.88%', '7.03', 'g'],
+        ['Electronic accessories', '5.67%', '6.91'], ['Fashion accessories', '5.06%', '6.88'], ['Food and beverages', '5.31%', '7.25'],
+        ['Health and beauty', '3.90%', '6.90'], ['Home and lifestyle', '6.94%', '6.93'], ['Sports and travel', '6.00%', '7.26'],
+        ['Phuket', '32.88%', '6.82', 'g'],
+        ['Electronic accessories', '5.28%', '7.12'], ['Fashion accessories', '5.08%', '6.72'], ['Food and beverages', '4.71%', '6.99'],
+        ['Health and beauty', '6.19%', '7.10'], ['Home and lifestyle', '5.43%', '6.52'], ['Sports and travel', '6.19%', '6.51'],
+        ['Grand Total', '100.00%', '6.97', 't']
+      ]
+    }
+  };
+
+  var SETS = [
+    {
+      key: 'ai', tag: 'AI', title: 'พื้นฐานการใช้ AI อย่างถูกต้องและปลอดภัย',
+      qs: [
+        Q('Generative AI มีความหมายตรงกับข้อใด?',
+          ['เทคโนโลยี AI ที่เน้นการสร้างสิ่งใหม่จากข้อมูลเดิมที่มีอยู่', 'เทคโนโลยี AI ที่ใช้จำแนกประเภทข้อมูลอัตโนมัติ', 'เทคโนโลยี AI ที่ใช้ทำนายผลลัพธ์จากข้อมูลในอดีต', 'เทคโนโลยี AI ที่ใช้ตรวจสอบความปลอดภัยของข้อมูล'], 0,
+          'Generative AI คือ AI ที่สร้างเนื้อหาใหม่ เช่น ข้อความ ภาพ เสียง จากรูปแบบที่เรียนรู้มาจากข้อมูลเดิม ส่วนข้ออื่นคือการจำแนก การทำนาย และความปลอดภัย ซึ่งไม่ใช่นิยามของ Generative AI'),
+        Q('Generative AI ใช้ความสามารถในการจำแนกประเภทข้อมูล (Classification) เพื่อวัตถุประสงค์ใดเป็นหลัก?',
+          ['เพื่อตรวจสอบความถูกต้องของข้อมูลที่สร้างขึ้น', 'เพื่อเพิ่มความเร็วในการประมวลผล', 'เพื่อเข้าใจ Prompt และบริบทก่อนสร้างเนื้อหาใหม่', 'เพื่อลดขนาดของข้อมูลที่ต้องจัดเก็บ'], 2,
+          'AI ต้องจำแนกและทำความเข้าใจว่า Prompt ขออะไรและอยู่ในบริบทใด ก่อนจะสร้างเนื้อหาใหม่ให้ตรงกับความต้องการ'),
+        Q('AI เรียนรู้วิธีการตอบคำถามจากสิ่งใดเป็นหลัก?',
+          ['การวิเคราะห์รูปแบบจากข้อมูลที่อยู่ในฐานข้อมูลขนาดใหญ่', 'การรับคำแนะนำจากผู้เชี่ยวชาญที่กำหนดกฎเกณฑ์ให้', 'ชุดข้อมูลการฝึก (Training Data) ที่มนุษย์ป้อนให้', 'อัลกอริทึมที่โปรแกรมเมอร์เขียนไว้ล่วงหน้า'], 0,
+          'AI เรียนรู้โดยหารูปแบบจากข้อมูลปริมาณมหาศาล ไม่ได้ตอบตามกฎที่มนุษย์เขียนไว้ตายตัว ข้อ b และ d จึงไม่ใช่',
+          'ข้อ a และ c ใกล้เคียงกันมาก ผมเลือก a เพราะข้อนี้พูดถึงกระบวนการเรียนรู้โดยตรง ถ้าบทเรียนของคุณเน้นคำว่า Training Data ให้ดูข้อ c ด้วย'),
+        Q('ข้อใดอธิบาย AI Hallucination ได้ถูกต้องที่สุด?',
+          ['AI สร้างข้อมูลที่ไม่มีในชุด Training Data ขึ้นมาเอง', 'AI ใช้เวลาประมวลผลนานเกินไปจนระบบค้าง', 'AI ไม่สามารถเข้าใจคำสั่งที่ซับซ้อนได้', 'AI ตอบคำถามด้วยภาษาที่ไม่ถูกต้องตามไวยากรณ์'], 0,
+          'Hallucination คือการที่ AI แต่งข้อมูลที่ไม่มีอยู่จริงขึ้นมา แล้วตอบด้วยน้ำเสียงมั่นใจเหมือนเป็นความจริง'),
+        Q('เหตุใดการเข้ารหัส (Encode) ข้อมูลจึงช่วยลดความเสี่ยงในการใช้ AI?',
+          ['เพราะทำให้ AI ทำงานได้เร็วและแม่นยำขึ้น', 'เพราะช่วยป้องกันข้อมูลส่วนตัวไม่ให้รั่วไหล', 'เพราะช่วยให้ AI เข้าใจคำสั่งได้ดีขึ้น', 'เพราะทำให้ผลลัพธ์จาก AI มีคุณภาพสูงขึ้น'], 1,
+          'การเข้ารหัสหรือปกปิดข้อมูลสำคัญก่อนส่งให้ AI ช่วยลดความเสี่ยงที่ข้อมูลส่วนตัวหรือความลับขององค์กรจะรั่วไหล ไม่เกี่ยวกับความเร็วหรือคุณภาพของคำตอบ'),
+        Q('ทำไมการเขียน Prompt เป็นภาษาอังกฤษจึงมักได้ผลลัพธ์ที่ดีกว่าภาษาไทย?',
+          ['เพราะภาษาไทยมีตัวอักษรที่ซับซ้อนเกินไป', 'เพราะภาษาอังกฤษมีไวยากรณ์ง่ายกว่า', 'เพราะผู้พัฒนา AI ส่วนใหญ่ใช้ภาษาอังกฤษ', 'เพราะ AI ถูกฝึกด้วยข้อมูลภาษาอังกฤษเป็นหลัก'], 3,
+          'โมเดลส่วนใหญ่ถูกฝึกด้วยข้อมูลภาษาอังกฤษเป็นสัดส่วนมากที่สุด จึงเข้าใจและตอบเป็นภาษาอังกฤษได้แม่นกว่า'),
+        Q('หากต้องการให้ AI สร้างเนื้อหาภาษาไทยจาก Prompt ภาษาอังกฤษ ควรเพิ่มคำใดต่อท้าย?',
+          ['“Translate to Thai language please”', '“In Thai” หรือ “ในภาษาไทย”', '“Respond in Thai script”', '“Convert to Thai format”'], 1,
+          'ต่อท้ายด้วย “In Thai” หรือ “ในภาษาไทย” สั้นและบอกภาษาผลลัพธ์ชัดเจนที่สุด ส่วนตัวเลือกอื่นเป็นการสั่งแปลหรือแปลงรูปแบบ ซึ่งความหมายไม่ตรงกับการให้ตอบเป็นภาษาไทย'),
+        Q('หากต้องการให้ AI เขียนอีเมลแจ้งลูกค้าเรื่องการเลื่อนกำหนดส่งสินค้าอย่างสุภาพและเป็นทางการ ควรเขียน Prompt อย่างไร?',
+          ['“Create email to customer in Thai”', '“Make professional email for business customer in Thai”', '“Generate email template in Thai language”', '“Write formal email about order delay, to customer, in Thai, professional tone”'], 3,
+          'Prompt ที่ดีระบุครบ: สิ่งที่ให้ทำ (Write formal email) เรื่อง (order delay) ผู้รับ (customer) ภาษา (Thai) และน้ำเสียง (professional tone)'),
+        Q('ในการตรวจสอบความถูกต้องของข้อมูลจาก AI ควรทำตามขั้นตอนใดเป็นลำดับแรก?',
+          ['ตรวจสอบไวยากรณ์และการสะกดคำในเนื้อหาที่ได้', 'เปรียบเทียบกับข้อมูลจากแหล่งที่เชื่อถือได้หลายแหล่ง', 'พิจารณาความสมเหตุสมผลของข้อมูลเบื้องต้น', 'ส่งให้ผู้เชี่ยวชาญในสาขานั้นตรวจสอบทันที'], 2,
+          'ลำดับที่เหมาะสมคือดูความสมเหตุสมผลเบื้องต้นก่อน จากนั้นจึงเทียบกับแหล่งที่เชื่อถือได้ และส่งผู้เชี่ยวชาญเมื่อเป็นเรื่องสำคัญ',
+          'ข้อ b ก็เป็นวิธีตรวจที่สำคัญมาก แต่คำว่า “เบื้องต้น” ในข้อ c ชี้ว่าเป็นขั้นแรก ถ้าเฉลยของคอร์สต่างจากนี้ ให้ยึดเฉลยของคอร์ส'),
+        Q('คำตอบ AI ที่ว่า “ผลไม้ที่มี 11 ตัวอักษรและลงท้ายด้วย o คือ Guanabano” แสดงข้อจำกัดใด?',
+          ['AI ไม่สามารถนับจำนวนตัวอักษรได้อย่างถูกต้อง', 'AI มักจะเดาคำตอบโดยไม่ตรวจสอบความถูกต้อง', 'AI ไม่เข้าใจความหมายของคำถามที่ซับซ้อน', 'AI ตอบคำถามจากข้อมูลที่ไม่ทันสมัย'], 0,
+          'Guanabano มี 9 ตัวอักษร ไม่ใช่ 11 AI ประมวลผลข้อความเป็นหน่วยย่อย (token) จึงนับตัวอักษรได้ไม่แม่น ข้อนี้เป็นตัวอย่างข้อจำกัดด้านการนับ',
+          'ข้อ b (เดาโดยไม่ตรวจสอบ) ก็เข้าข่ายอยู่บ้าง ผมเลือก a เพราะตัวอย่างนี้เกี่ยวกับการนับตัวอักษรโดยตรง')
+      ]
+    },
+    {
+      key: 'sheets', tag: 'Google Sheets', title: 'ใช้ ChatGPT วิเคราะห์ข้อมูลใน Google Sheet สำหรับงานขายและการตลาด',
+      qs: [
+        Q('เมื่อจะใช้งาน ChatGPT ใน Google Sheets ผู้ใช้ต้องระบุสิ่งใดก่อนเริ่มใช้งาน?',
+          ['ชื่อของตัวเองและวัตถุประสงค์ในการใช้งาน', 'หัวข้อหรือประเภทของคำถามและคำตอบที่คาดหวัง', 'จำนวนครั้งที่ต้องการใช้งานในวันนั้น', 'รหัสเข้าใช้ AI และชื่อบริษัทที่ใช้งาน'], 1,
+          'ก่อนเริ่มต้องกำหนดหัวข้อ (Topic) หรือประเภทงานและผลลัพธ์ที่ต้องการ เพื่อให้ ChatGPT ตอบตรงกับงานนั้น'),
+        Q('หลักการเขียน Prompt สำหรับงาน Google Sheet ประกอบด้วยองค์ประกอบกี่ส่วน?',
+          ['2 ส่วน คือ Query และ Result', '3 ส่วน คือ Action, Object และ Detail (Optional)', '4 ส่วน คือ Action, Object, Detail และ Format', '5 ส่วน คือ Action, Object, Detail, Format และ Example'], 1,
+          'โครงสร้างพื้นฐานคือ Action (ให้ทำอะไร) + Object (กับข้อมูลส่วนไหน) + Detail (รายละเอียดเพิ่มเติม ใส่หรือไม่ใส่ก็ได้)',
+          'เลือกจากโครงสร้างที่มีคำว่า Optional ในตัวเลือก ถ้าคอร์สของคุณสอนจำนวนส่วนต่างจากนี้ ให้ยึดตามคอร์ส'),
+        Q('สัญลักษณ์พิเศษใดที่ใช้ในการเน้นข้อความเมื่อเขียน Prompt ใน ChatGPT สำหรับ Google Sheets?',
+          ['เครื่องหมายทับ (/) ครอบข้อความ', 'เครื่องหมายดอกจัน (*) หน้าและหลังข้อความ', 'เครื่องหมายวงเล็บ ({}) ครอบข้อความ', 'เครื่องหมาย Double Quote (") ครอบข้อความ'], 3,
+          'ใช้เครื่องหมายคำพูดคู่ครอบข้อความที่ต้องการเน้น เช่น ชื่อคอลัมน์หรือค่าที่ต้องการให้ ChatGPT ใช้ตามตัวอักษร',
+          'ข้อนี้อาศัยวิธีที่ใช้กันทั่วไปในการเขียน Prompt ถ้าคอร์สสอนสัญลักษณ์อื่น ให้ยึดตามคอร์ส'),
+        Q('หากต้องการวิเคราะห์ข้อมูลที่มีอยู่เดิมใน Google Sheets ควรเลือก Topic ใด?',
+          ['Generate Table เพราะเป็นการสร้างข้อมูลใหม่', 'Summarize Data เพราะเป็นการหาข้อสรุปของข้อมูล', 'Complete Table เพราะเป็นการเติมข้อมูลที่ขาดหายไป', 'Analyze Range Data เพราะเป็นการวิเคราะห์ข้อมูลที่มีอยู่แล้ว'], 3,
+          'Analyze Range Data ใช้วิเคราะห์ช่วงข้อมูลที่มีอยู่แล้ว ส่วน Generate Table สร้างข้อมูลใหม่ และ Complete Table เติมข้อมูลที่ขาด'),
+        Q('เหตุใดการใช้สัญลักษณ์ขีด (-) จึงมีประโยชน์ในการเขียน Prompt สำหรับ ChatGPT ใน Google Sheets?',
+          ['เพื่อแยกระหว่างตัวเลขกับตัวอักษรให้ ChatGPT อ่านได้ง่ายขึ้น', 'เพื่อทำให้ ChatGPT ทำงานได้เร็วขึ้นและประมวลผลได้แม่นยำ', 'เพื่อทำให้ Google Sheets เข้าใจว่าคำสั่งนั้นมาจาก ChatGPT', 'เพื่อป้องกันไม่ให้ส่วนขยายอื่นแทรกแซงการทำงานของ ChatGPT'], 0,
+          'เครื่องหมายขีดช่วยแบ่งส่วนต่าง ๆ ของ Prompt ให้ชัดเจน ทำให้ ChatGPT อ่านและแยกแยะคำสั่งได้ง่ายขึ้น ข้อ b, c, d เป็นผลที่เกินจริง',
+          'ข้อนี้ผมเดาจากเหตุผลที่สมเหตุสมผลที่สุดในสี่ตัวเลือก ถ้าเฉลยของคอร์สต่างจากนี้ ให้ยึดตามคอร์ส'),
+        Q('ข้อใดถูกต้องเกี่ยวกับการสร้าง App Script ผ่าน ChatGPT เพื่อทำงานเกี่ยวกับข้อมูลใน Google Sheets?',
+          ['App Script จะทำงานเฉพาะเมื่อมีการเชื่อมต่ออินเทอร์เน็ตเท่านั้น', 'App Script ทำงานได้เฉพาะกับตัวเลขและไม่สามารถประมวลผลข้อความได้', 'App Script สามารถตั้งเวลาให้ทำงานอัตโนมัติตามวันและเวลาที่กำหนดได้', 'App Script ต้องถูกเขียนใหม่ทุกครั้งที่มีการเปิด Google Sheets'], 2,
+          'App Script ตั้ง Trigger ให้ทำงานอัตโนมัติตามเวลาที่กำหนดได้ ประมวลผลข้อความได้ และไม่ต้องเขียนใหม่ทุกครั้งที่เปิดไฟล์'),
+        Q('ก่อนที่จะพิมพ์คำสั่ง Prompt ใน ChatGPT สำหรับ Google Sheets ผู้ใช้ต้องทำอะไรก่อน?',
+          ['กดปุ่ม Refresh เพื่อให้ ChatGPT พร้อมใช้งาน', 'ตั้งค่า API Key สำหรับการเชื่อมต่อ', 'เลือกช่วงของข้อมูลที่ต้องการนำไปวิเคราะห์', 'สร้าง Sheet ใหม่สำหรับแสดงผลลัพธ์'], 2,
+          'ต้องเลือกช่วงข้อมูล (Range) ที่จะให้วิเคราะห์ก่อน เพื่อให้ ChatGPT รู้ว่าต้องทำงานกับข้อมูลส่วนไหน'),
+        Q('หากบริษัทของคุณมีข้อมูลยอดขายสินค้าต่าง ๆ ใน Google Sheets และต้องการสร้างใบเสนอราคาแยกตามสินค้า คุณควรทำอย่างไร?',
+          ['Export ข้อมูลออกมาเป็น Excel แล้วใช้เครื่องมือใน Excel สร้างใบเสนอราคา', 'สร้างใบเสนอราคาด้วยตนเองทีละใบเพื่อความแม่นยำ', 'เลือก Topic "Generate Table" และให้ ChatGPT สร้างใบเสนอราคาตามข้อมูล', 'เลือก Topic "Analyze Range Data" และให้ ChatGPT สร้าง Template ใบเสนอราคาแยกตาม Product'], 3,
+          'ข้อมูลมีอยู่แล้ว จึงใช้ Analyze Range Data ให้ ChatGPT อ่านข้อมูลและสร้าง Template ใบเสนอราคาแยกตามสินค้า ส่วน Generate Table ใช้สร้างข้อมูลใหม่ที่ยังไม่มี',
+          'ข้อ c ก็อาจถูกเลือกได้ถ้าคอร์สสอนใช้ Generate Table กับงานนี้ ผมเลือก d เพราะข้อมูลมีอยู่แล้ว'),
+        Q('หากบริษัทของคุณต้องการสร้าง Pivot Table จากข้อมูลยอดขายใน Google Sheets โดยอัตโนมัติทุกเช้า คุณควรทำอย่างไร?',
+          ['สร้าง Google Script ผ่าน ChatGPT และตั้ง Trigger ให้ทำงานทุกเช้า', 'เปิด Google Sheets ทุกเช้าและสร้าง Pivot Table ด้วยตนเอง', 'Export ข้อมูลไปยัง Excel ทุกวันเพื่อใช้ฟังก์ชัน Auto Refresh', 'ใช้ ChatGPT วิเคราะห์ข้อมูลทุกวันโดยไม่ต้องทำ Pivot Table'], 0,
+          'งานอัตโนมัติตามเวลาต้องใช้ Script พร้อม Trigger ตั้งเวลา ข้ออื่นยังต้องทำเองทุกวันหรือไม่ได้สร้าง Pivot Table'),
+        Q('ปัญหาในการเลือกข้อมูลใน Google Sheets เพื่อให้ ChatGPT วิเคราะห์ คืออะไรและมีวิธีแก้ไขอย่างไร?',
+          ['ChatGPT มีข้อจำกัดในการวิเคราะห์ข้อมูลไม่เกิน 2 คอลัมน์ ต้องแยกวิเคราะห์เป็นส่วน ๆ', 'เมื่อข้อมูลมีหลายคอลัมน์หรือมีปริมาณมาก ระบบอาจไม่แสดงช่วงการเลือก ต้องไปใช้วิธีแบบไฟล์แทน', 'ChatGPT จะวิเคราะห์ข้อมูลได้เฉพาะตัวเลข ไม่สามารถวิเคราะห์ข้อความได้ในคราวเดียวกัน', 'ต้องเปลี่ยน Format ของข้อมูลให้เป็น CSV ก่อนที่ ChatGPT จะสามารถวิเคราะห์ได้'], 1,
+          'เมื่อข้อมูลกว้างหรือมีปริมาณมาก การเลือกช่วงอาจแสดงผลไม่ครบ ให้เปลี่ยนไปใช้วิธีส่งข้อมูลแบบไฟล์แทน ข้อ a, c, d เป็นข้อจำกัดที่ไม่จริง')
+      ]
+    },
+    {
+      key: 'excel', tag: 'Excel', title: 'การวิเคราะห์ข้อมูลเบื้องต้นโดยใช้ Excel',
+      qs: [
+        Q('ข้อมูลใดเป็น Unstructured Data?',
+          ['บทสนทนาจากคอลเซ็นเตอร์', 'ยอดขายรายเดือนในไฟล์ Excel', 'รายชื่อลูกค้าในฐานข้อมูล SQL', 'รหัสสินค้าในระบบคลังสินค้า'], 0,
+          'บทสนทนาเป็นข้อความหรือเสียงที่ไม่มีโครงสร้างตายตัว ส่วนข้ออื่นอยู่ในรูปตารางหรือฐานข้อมูลที่มีแถวและคอลัมน์ชัดเจน'),
+        Q('เครื่องมือใดที่ใช้สร้าง Dashboard แสดงผลข้อมูล?',
+          ['Microsoft Power BI', 'Microsoft Word', 'Google Chrome', 'Microsoft Teams'], 0,
+          'Power BI เป็นเครื่องมือสร้าง Dashboard และรายงานเชิงภาพโดยเฉพาะ'),
+        Q('ข้อใดเป็นประเภทข้อมูลแบบ Categorical Data?',
+          ['ยอดขายรายเดือนของร้านค้า', 'อุณหภูมิห้องตลอด 24 ชั่วโมง', 'น้ำหนักสินค้าในคลังสินค้า', 'ระดับการศึกษาของพนักงาน'], 3,
+          'ระดับการศึกษาแบ่งเป็นกลุ่มหรือหมวดหมู่ เช่น ปริญญาตรี ปริญญาโท ส่วนข้ออื่นเป็นตัวเลขที่วัดค่าได้'),
+        Q('ทำไมจึงควรเลือกใช้ Bar Chart แทน Pie Chart ในการแสดงข้อมูลที่มีค่าใกล้เคียงกัน?',
+          ['Bar Chart เป็นที่นิยมมากกว่าในปัจจุบัน', 'Bar Chart มีความน่าเชื่อถือในการนำเสนอมากกว่า', 'Bar Chart แสดงความแตกต่างของข้อมูลได้ชัดเจนกว่า', 'Bar Chart เข้าใจง่ายสำหรับผู้บริหารมากกว่า'], 2,
+          'ความสูงของแท่งเทียบกันด้วยสายตาได้ง่ายกว่าการเทียบขนาดมุมของแต่ละชิ้นใน Pie Chart เมื่อค่าใกล้กัน'),
+        Q('เพราะเหตุใดข้อมูลภาพถ่ายหน้าลูกค้าจึงจัดเป็น Unstructured Data?',
+          ['มีขนาดไฟล์ใหญ่กว่าข้อมูลทั่วไป', 'ต้องเก็บในระบบพิเศษแยกต่างหาก', 'ต้องอัปเดตบ่อยกว่าข้อมูลอื่น', 'ไม่สามารถจัดเก็บในรูปแบบตารางได้'], 3,
+          'ข้อมูล Unstructured คือข้อมูลที่ไม่มีโครงสร้างแถวและคอลัมน์ จึงจัดเก็บเป็นตารางตรง ๆ ไม่ได้'),
+        Q('เหตุใดการทำความสะอาดข้อมูลจึงเป็นขั้นตอนสำคัญในการวิเคราะห์ข้อมูล?',
+          ['เพื่อให้ประมวลผลข้อมูลได้เร็วขึ้น', 'ช่วยประหยัดพื้นที่ในการจัดเก็บข้อมูล', 'เพื่อให้ผลการวิเคราะห์มีความถูกต้องแม่นยำ', 'ช่วยให้แชร์ข้อมูลได้สะดวกขึ้น'], 2,
+          'ข้อมูลที่ซ้ำ ขาดหาย หรือรูปแบบไม่ตรงกันทำให้ผลวิเคราะห์ผิดพลาด การทำความสะอาดจึงช่วยให้ผลถูกต้อง'),
+        Q('คุณกำลังตรวจสอบข้อมูลลูกค้าที่ได้รับมา พบว่าในคอลัมน์เพศมีทั้ง "Male", "MALE", "male" และ "M" ที่หมายถึงเพศชายเหมือนกัน คุณควรทำอย่างไรก่อนนำข้อมูลไปวิเคราะห์?',
+          ['แยกข้อมูลออกเป็นกลุ่ม ๆ ตามการสะกดคำ', 'ใช้ Filter ตรวจสอบและแก้ไขให้เป็นรูปแบบเดียวกัน', 'นับความถี่ของข้อมูลแต่ละแบบ', 'ไม่นำคอลัมน์เพศมาวิเคราะห์ข้อมูลเนื่องจากข้อมูลไม่สอดคล้องกัน'], 1,
+          'ควรใช้ Filter ดูค่าที่มีอยู่ทั้งหมด แล้วแก้ให้เป็นรูปแบบเดียวกัน (เช่น Male ทั้งหมด) ก่อนวิเคราะห์ การทิ้งคอลัมน์หรือแยกกลุ่มตามการสะกดไม่ได้แก้ปัญหา'),
+        Q('สมมติว่าคุณได้รับไฟล์ CSV ที่มีข้อมูลภาษาไทย หลังจากที่ Import ไฟล์และเลือก UTF-8 เป็น File Origin ทำให้อ่านข้อมูลภาษาไทยได้ถูกต้องแล้ว คุณควรทำสิ่งใดเพื่อให้เพื่อนร่วมงานเปิดไฟล์ใช้งานได้อย่างสะดวกในภายหลัง?',
+          ['บันทึกเป็นไฟล์ CSV ฉบับใหม่เพื่อเก็บการตั้งค่าการเข้ารหัส', 'แปลงเป็นไฟล์ Excel format เพื่อให้เปิดใช้งานได้ทันที', 'สร้างสำเนาข้อมูลสำรองเพื่อป้องกันไฟล์เสียหาย', 'ตั้งค่า Auto-save ทุก 5 นาทีเพื่อป้องกันข้อมูลสูญหาย'], 1,
+          'ไฟล์ CSV ไม่เก็บการตั้งค่า Import จึงต้องตั้งค่าซ้ำทุกครั้ง การบันทึกเป็นไฟล์ Excel (.xlsx) ทำให้เปิดแล้วเห็นภาษาไทยถูกต้องทันที',
+          'ข้อ a ก็อาจถูกเลือกได้ในบางบริบท ผมเลือก b เพราะ CSV ไม่เก็บการตั้งค่า Import')
+      ].concat([
+        Q('ข้อใดไม่ใช่สิ่งที่ควรพิจารณาเมื่อทำความสะอาดข้อมูล',
+          ['แหล่งที่มาของข้อมูล', 'ข้อมูลซ้ำ', 'ข้อมูลขาดหาย', 'ข้อมูลที่เป็น Outlier'], 0,
+          'การทำความสะอาดข้อมูลจัดการกับข้อมูลซ้ำ ข้อมูลขาดหาย และค่าผิดปกติ (Outlier) ส่วนแหล่งที่มาไม่ใช่ปัญหาของตัวข้อมูลที่ต้องแก้'),
+        Q('ใครใช้เทคนิคทำความสะอาดข้อมูลได้เหมาะสมที่สุด?',
+          ['ปลาใช้ Filter ในการหาข้อมูลอายุของลูกค้า', 'ไก่ใช้ Filter ในการหาข้อมูลจังหวัดที่ลูกค้าอาศัยอยู่', 'หมีใช้ Max ในการหาข้อมูลเบอร์มือถือของลูกค้า', 'ช้างใช้ Min ในการหาข้อมูลเพศของลูกค้า'], 1,
+          'Filter เหมาะกับข้อมูลข้อความที่เป็นหมวดหมู่ เช่น จังหวัด เพราะดูรายการค่าที่มีและจับค่าที่สะกดผิดได้ ส่วน Max/Min ใช้กับตัวเลข ไม่เหมาะกับเบอร์มือถือหรือเพศ')
+      ])
+    },
+    {
+      key: 'pivot', tag: 'Pivot Table', title: 'การสร้างรายงานบน Excel โดยใช้ Pivot Table และ Pivot Chart',
+      qs: [
+        Q('พื้นที่สำหรับจัดวางข้อมูลใน Pivot Table ประกอบด้วยส่วนใดบ้าง?',
+          ['Header, Body, Footer', 'X-axis, Y-axis, Labels', 'Filters, Rows, Columns, Values', 'Title, Data, Summary'], 2,
+          'พื้นที่ใน PivotTable Fields มี 4 ส่วน คือ Filters, Rows, Columns และ Values'),
+        Q('หากต้องการแสดงผลข้อมูลเป็นเปอร์เซ็นต์ใน Pivot Table ต้องเลือกที่ใด?',
+          ['Show Value As', 'Field Settings', 'Format Cells', 'Data Format'], 0,
+          'คลิกขวาที่ค่าใน Pivot Table แล้วเลือก Show Values As เพื่อเปลี่ยนเป็น % ต่าง ๆ'),
+        Q('เราสามารถใช้เครื่องมือใดเพื่อแสดงผลข้อมูล Pivot Table ในรูปแบบกราฟ?',
+          ['Pivot Chart', 'Pivot Format', 'Data Validation', 'Conditional Formatting'], 0,
+          'Pivot Chart คือกราฟที่สร้างจาก Pivot Table และเปลี่ยนตามเมื่อปรับตาราง'),
+        Q('ตอนไหนที่เราควรเลือกใช้ Line Chart แทน Bar Chart?',
+          ['เมื่อต้องการเปรียบเทียบข้อมูลระหว่างกลุ่ม', 'เมื่อต้องการแสดงสัดส่วนของข้อมูลทั้งหมด', 'เมื่อต้องการแสดงการเปลี่ยนแปลงตามเวลา', 'เมื่อต้องการแสดงความสัมพันธ์ระหว่างตัวแปร X และ Y'], 2,
+          'Line Chart เหมาะกับการดูแนวโน้มที่เปลี่ยนไปตามช่วงเวลา'),
+        Q('ข้อใดไม่ใช่ประโยชน์ของ Pivot Table?',
+          ['แสดงผลข้อมูลของยอดขาย', 'เปรียบเทียบข้อมูลจำนวนการขายระหว่างสาขา', 'เปรียบเทียบข้อมูลสินค้าขายดีของแต่ละสาขา', 'ใช้ทำความสะอาดข้อมูลรายชื่อลูกค้า'], 3,
+          'Pivot Table ใช้สรุปและเปรียบเทียบข้อมูล ไม่ได้ออกแบบมาเพื่อทำความสะอาดข้อมูล'),
+        Q('เหตุใดจึงควรหลีกเลี่ยงการใช้ Pie Chart เมื่อข้อมูลมีสัดส่วนใกล้เคียงกัน?',
+          ['Pie Chart ใช้เวลาในการประมวลผลนานกว่า', 'Pie Chart ยากต่อการแยกแยะความแตกต่างด้วยสายตา', 'Pie Chart ไม่สามารถแสดงค่าตัวเลขได้', 'Pie Chart ไม่สามารถปรับขนาดได้อัตโนมัติ'], 1,
+          'ชิ้นที่ขนาดใกล้กันแทบแยกด้วยตาไม่ออก ควรใช้ Bar Chart แทน'),
+        Q('จากข้อมูลดังภาพ หากอยากรู้ว่าลูกค้าที่เป็นสมาชิกกับลูกค้าที่ไม่ได้เป็นสมาชิก มีเปอร์เซ็นต์การชำระเงินผ่านช่องทางใดมากกว่ากัน ควรปรับการแสดงผลให้ Show Values แบบใด?',
+          ['No Calculation', 'Running Total in…Payment', 'Index', '% of Row Total'], 3,
+          'Member และ Normal อยู่คนละแถว ต้องการเทียบสัดส่วนช่องทางชำระเงินภายในแต่ละแถว จึงใช้ % of Row Total ให้แต่ละแถวรวมเป็น 100%', '', 'p7'),
+        Q('หากต้องการติดตามเทรนด์ข้อมูลยอดขายสินค้ารายวันของสินค้าแต่ละตัว ควรแสดงผลข้อมูลแบบใดจึงจะเหมาะสมที่สุด?',
+          ['Bar Chart', 'Line Chart', 'Pie Chart', 'Scatter Plot'], 1,
+          'เทรนด์รายวันคือข้อมูลต่อเนื่องตามเวลา ใช้ Line Chart ได้ดีที่สุด'),
+        Q('จากภาพ หากอยากเปลี่ยนการแสดงผลข้อมูลจากเปอร์เซ็นต์การชำระเงินด้วยเงินสดเป็นจำนวนครั้งในการชำระเงินด้วยเงินสด ควรเลือกแสดงผลข้อมูลแบบใด?',
+          ['% of Parent Row Total', '% of Column Total', '% of Grand Total', 'No Calculation'], 3,
+          'ตารางตอนนี้แสดงเป็น % of Grand Total (ทั้งตารางรวมกัน 100%) การกลับไปเป็นจำนวนครั้งต้องเลือก No Calculation', '', 'p9'),
+        Q('หากคุณเป็น Business Development Officer ที่วิเคราะห์ข้อมูลผลิตภัณฑ์, Gross income และ Rating ของแต่ละสาขา แล้วพบผลดังในตาราง คุณจะแนะนำแผนพัฒนาธุรกิจใดให้แก่ทีม?',
+          ['เจาะกลุ่มลูกค้าใหม่ในสินค้าประเภท Sports and travel ในสาขาภูเก็ต', 'ทำการตลาดเพิ่มในหมวดสินค้าประเภท Health and beauty ของสาขาเชียงใหม่เพื่อกระตุ้นยอดขาย', 'ทำโปรโมชันลด 10% ทุกรายการในสินค้าประเภท Electronic accessories ในสาขากรุงเทพ', 'แนะนำให้จัดอบรมการบริการของพนักงานหน้าร้านในสินค้าหมวด Home and Lifestyle ของทุกสาขาเพื่อเพิ่มเรตติ้ง'], 1,
+          'Health and beauty ของเชียงใหม่มี Gross income 3.90% ต่ำสุดในตาราง ส่วน Rating 6.90 ไม่ได้ต่ำผิดปกติ ปัญหาจึงอยู่ที่ยอดขาย ควรกระตุ้นด้วยการตลาด ข้ออื่น: ภูเก็ต Sports and travel รายได้ 6.19% สูงอยู่แล้ว, กรุงเทพ Electronic accessories รายได้ 5.87% ไม่ได้ต่ำจนต้องลดราคาทุกรายการ, Home and lifestyle เรตติ้งต่ำจริงแค่ภูเก็ต (6.52) ไม่ใช่ทุกสาขา',
+          'ข้อนี้เป็นการตีความตาราง เฉลยตามเหตุผลข้างต้น', 'p10')
+      ]
+    },
+    {
+      key: 'notion', tag: 'Notion', title: 'เริ่มต้นใช้งาน Notion สำหรับมือใหม่',
+      qs: [
+        Q('ใน Notion ไม่มีระบบใดในการจัดระเบียบข้อมูล?',
+          ['Database', 'Block', 'Folder', 'Page'], 2,
+          'Notion จัดระเบียบด้วย Block, Page และ Database ไม่มีระบบโฟลเดอร์ (ใช้ Page ซ้อน Page แทน)'),
+        Q('ใน Notion แบบ Free Plan สามารถอัปโหลดไฟล์ได้สูงสุดขนาดเท่าไหร่?',
+          ['2 MB', '5 MB', '10 MB', '15 MB'], 1,
+          'Free Plan อัปโหลดไฟล์ได้สูงสุด 5 MB ต่อไฟล์',
+          'ข้อจำกัดของแพ็กเกจอาจเปลี่ยนได้ ถ้าต้องการยืนยันให้ดูหน้า Pricing ของ Notion'),
+        Q('การสร้าง To-Do List ใน Notion สามารถทำได้โดยพิมพ์อย่างไร?',
+          ['พิมพ์ [] แล้วกด Spacebar', 'พิมพ์ {} แล้วกด Spacebar', 'พิมพ์ () แล้วกด Spacebar', 'พิมพ์ <> แล้วกด Spacebar'], 0,
+          'พิมพ์ [] แล้วเว้นวรรค Notion จะสร้างช่องติ๊กของ To-Do List ให้ทันที'),
+        Q('การสลับโหมดระหว่างกลางคืนและกลางวันใน Notion ใช้คีย์ลัดอะไร?',
+          ['กด Ctrl + Shift + D', 'กด Ctrl + Shift + L', 'กด Ctrl + Shift + N', 'กด Ctrl + Shift + M'], 1,
+          'Ctrl + Shift + L (บน Mac คือ Cmd + Shift + L) ใช้สลับ Dark mode และ Light mode'),
+        Q('เมื่อต้องการค้นหาข้อมูลใน Notion สามารถใช้คีย์ลัดอะไร?',
+          ['กด Ctrl + F', 'กด Ctrl + S', 'กด Ctrl + H', 'กด Ctrl + P'], 3,
+          'Ctrl + P เปิดช่องค้นหา (Search) ทั่วทั้ง Workspace',
+          'Ctrl + F ค้นหาเฉพาะในหน้าที่เปิดอยู่ ถ้าโจทย์หมายถึงค้นในหน้าเดียว คำตอบจะเป็น a'),
+        Q('การใช้ Filter ใน Database View มีจุดประสงค์เพื่ออะไร?',
+          ['เลือกแสดงเฉพาะข้อมูลที่ตรงตามเงื่อนไขที่กำหนด', 'เปลี่ยนสีของข้อมูลให้สวยงามมากขึ้น', 'เรียงลำดับข้อมูลจากมากไปน้อยเท่านั้น', 'สร้างสำเนาของข้อมูลไว้ใช้งานภายหลัง'], 0,
+          'Filter กรองให้เห็นเฉพาะรายการที่ตรงเงื่อนไข ส่วนการเรียงลำดับคือ Sort'),
+        Q('การสร้าง Template ใน Database มีข้อดีอย่างไร?',
+          ['ช่วยให้สามารถลบข้อมูลเก่าออกได้โดยอัตโนมัติ', 'ช่วยให้ Database ทำงานได้เร็วขึ้นกว่าปกติ', 'ช่วยให้สามารถใช้รูปแบบเดิมซ้ำ ๆ โดยไม่ต้องสร้างใหม่ทุกครั้ง', 'ช่วยให้สามารถเปลี่ยนชื่อ Database ได้ง่ายขึ้น'], 2,
+          'Template เก็บรูปแบบหน้าไว้ใช้ซ้ำ สร้างรายการใหม่ได้ทันทีโดยไม่ต้องจัดโครงสร้างใหม่'),
+        Q('การใช้ Gallery View ใน Database เหมาะสมกับข้อมูลประเภทใด?',
+          ['ตัวเลขและสถิติ', 'ข้อความยาว ๆ', 'ไทม์ไลน์และวันที่', 'รูปภาพและการ์ด'], 3,
+          'Gallery View แสดงรายการเป็นการ์ดพร้อมภาพปก เหมาะกับข้อมูลที่เน้นรูปภาพ'),
+        Q('การใช้ Notion Web Clipper มีประโยชน์สำหรับการจัดเก็บข้อมูลอย่างไร?',
+          ['ช่วยให้สามารถแก้ไขเว็บไซต์ต้นฉบับได้โดยตรง', 'ช่วยให้สามารถสร้างเว็บไซต์ใหม่ได้ง่ายขึ้น', 'ช่วยให้สามารถบันทึกข้อมูลจากเว็บเข้า Database โดยไม่ต้องคัดลอกเอง', 'ช่วยให้สามารถแชร์ข้อมูลไปยังโซเชียลมีเดียได้'], 2,
+          'Web Clipper บันทึกหน้าเว็บเข้า Notion ได้ในคลิกเดียว ไม่ต้องคัดลอกและวางเอง'),
+        Q('การใช้ Mention (@) ใน Notion มีจุดประสงค์เพื่ออะไร?',
+          ['แจ้งเตือนและเชื่อมโยงไปยังบุคคลหรือ Page ที่เกี่ยวข้อง', 'เปลี่ยนสีของข้อความให้โดดเด่นขึ้น', 'สร้างลิงก์ไปยังเว็บไซต์ภายนอกเท่านั้น', 'สร้างสำเนาของข้อมูลไว้ใช้ภายหลัง'], 0,
+          'พิมพ์ @ เพื่อแท็กคน แจ้งเตือนเขา และลิงก์ไปยัง Page หรือวันที่ที่เกี่ยวข้อง'),
+        Q('หากต้องการให้ทีมงานสามารถเข้ามาแก้ไขข้อมูลใน Workspace ร่วมกันได้ ควรตั้งค่าอย่างไร?',
+          ['กด Share แล้วใส่อีเมลทีมงาน แล้วตั้งสิทธิ์เป็น Can Edit', 'กด Export แล้วส่งไฟล์ PDF ให้ทีมงานเพื่อดูข้อมูล', 'กด Duplicate แล้วสร้างสำเนาให้ทีมงานใช้งานแยกกัน', 'กด Template แล้วให้ทีมงานดาวน์โหลดไปใช้งานเอง'], 0,
+          'ต้อง Share ให้ทีมงานและตั้งสิทธิ์เป็น Can Edit จึงแก้ไขข้อมูลชุดเดียวกันร่วมกันได้ ข้ออื่นเป็นการส่งสำเนาหรือไฟล์ที่แก้ร่วมกันไม่ได้'),
+        Q('หากต้องการสร้างเอกสารที่มีโครงสร้าง 3 คอลัมน์เพื่อจัดข้อมูลให้เป็นระเบียบ ควรดำเนินการอย่างไร?',
+          ['สร้าง Database 3 อัน แล้วใช้ Relations เชื่อมโยงข้อมูลระหว่างกัน', 'สร้าง Block ธรรมดา แล้วใช้ Turn Into เปลี่ยนเป็น 3 Column Layout', 'สร้าง Template 3 อัน แล้วใช้ Duplicate เพื่อคัดลอกโครงสร้าง', 'สร้าง Page 3 หน้า แล้วใช้ Link Preview เพื่อแสดงข้อมูลรวมกัน'], 1,
+          'การจัดหน้าเป็น 3 คอลัมน์ทำได้จาก Block โดยเลือก Turn into แล้วเลือก 3 columns ข้ออื่นเกี่ยวกับการเชื่อมข้อมูลหรือการทำสำเนา ไม่ใช่การจัดเลย์เอาต์'),
+        Q('หากต้องการให้งานใน Timeline View แสดงความสัมพันธ์ว่างานไหนต้องเสร็จก่อนถึงจะทำงานต่อไปได้ ควรใช้ฟีเจอร์ใด?',
+          ['Sub-item', 'Dependencies', 'Group by Status', 'Filter by Date'], 1,
+          'Dependencies กำหนดว่างานหนึ่งต้องรออีกงานเสร็จก่อน และแสดงเส้นเชื่อมใน Timeline View'),
+        Q('หากต้องการสร้าง Goal Tracker ที่เชื่อมโยงกับ Key Metrics เพื่อวัดผลความสำเร็จ ควรใช้วิธีใด?',
+          ['สร้าง 1 Database แล้วใช้ Filter เพื่อแยกข้อมูลเป้าหมายและตัวชี้วัด', 'สร้าง Subpage หลาย ๆ หน้า แล้วใช้ Link Preview รวมข้อมูล', 'สร้าง Calendar View แล้วใช้ Timeline เพื่อแสดงความคืบหน้า', 'สร้าง 2 Database แยกกัน แล้วใช้ Relations Property เชื่อมโยงข้อมูล'], 3,
+          'แยกเป้าหมายกับตัวชี้วัดเป็น 2 Database แล้วเชื่อมกันด้วย Relation จึงดึงตัวชี้วัดมาวัดผลของแต่ละเป้าหมายได้'),
+        Q('ข้อใดอธิบายความสัมพันธ์ระหว่างโครงสร้างของ Block, Page และ Database ได้ถูกต้องที่สุด?',
+          ['Page เป็นพื้นฐาน, Block อยู่ภายใน Page, Database แยกอิสระ', 'Database เป็นพื้นฐาน, Page อยู่ภายใน Database, Block ใหญ่สุด', 'Block เป็นพื้นฐาน, Page รวมหลาย ๆ Block, Database รวมหลาย ๆ Page', 'ทั้งสามแยกอิสระ ไม่มีความสัมพันธ์กัน'], 2,
+          'Block เป็นหน่วยเล็กสุด Page ประกอบด้วยหลาย Block และ Database คือชุดของหลาย Page')
+      ]
+    },
+    {
+      key: 'vba', tag: 'Excel VBA', title: 'สร้างระบบบัญชีอัตโนมัติด้วย Excel',
+      qs: [
+        Q('การออกแบบพื้นที่ใช้งาน (User Interface) ของการบันทึกบัญชี การเลือกรหัสบัญชีจากผังบัญชี ใช้ฟังก์ชัน Data Validation criteria ใด',
+          ['Whole Number', 'Decimal', 'List', 'Date'], 2,
+          'การเลือกรหัสบัญชีจากรายการที่กำหนดไว้ในผังบัญชี ใช้ Data Validation แบบ List (Drop-down)'),
+        Q('ฟังก์ชันใดใช้สำหรับเรียกข้อมูลชื่อบัญชี (Account Name) โดยนำรหัสบัญชี (Account Code) ไปค้นหา',
+          ['XLOOKUP', 'HLOOKUP', 'SUMIF', 'TRIM'], 0,
+          'XLOOKUP ค้นหารหัสแล้วคืนค่าชื่อบัญชีที่ตรงกัน HLOOKUP ค้นตามแนวนอน SUMIF รวมยอด TRIM ตัดช่องว่าง',
+          'HLOOKUP ก็เป็นฟังก์ชันค้นหาเช่นกัน แต่ตารางผังบัญชีปกติเรียงเป็นแถวแนวตั้ง จึงเลือก XLOOKUP'),
+        Q('กราฟรูปแบบใดที่เหมาะกับการแสดงแนวโน้มข้อมูลในช่วงระยะเวลา เช่น ยอดขายรายเดือน',
+          ['Pie chart', 'Bar chart', 'Line chart', 'Scatter plot'], 2,
+          'Line chart เหมาะกับการดูแนวโน้มตามช่วงเวลา'),
+        Q('ข้อใดคือขั้นตอนที่สำคัญที่สุดในการพัฒนาโปรแกรม',
+          ['การพัฒนา (Development)', 'การบันทึกข้อมูล (Data Entries)', 'การออกแบบ (Design)', 'การหาความต้องการใช้งาน (Requirement)'], 3,
+          'ถ้าเก็บความต้องการผิด ทุกขั้นตอนหลังจากนั้นจะผิดตามไปด้วย จึงถือเป็นขั้นตอนสำคัญที่สุด'),
+        Q('การใช้งาน VBA เหมาะกับการใช้งานด้านใด',
+          ['สร้าง Pivot Table', 'การทำงานที่ซ้ำ ๆ มีขั้นตอน', 'ปรับเปลี่ยน Formatting cells และ Font', 'สร้าง Pie chart'], 1,
+          'VBA เหมาะกับการทำงานซ้ำ ๆ ที่มีขั้นตอนแน่นอน ส่วน Pivot Table, Format และกราฟทำได้ด้วยเมนูใน Excel อยู่แล้ว'),
+        Q('ฟังก์ชัน Pivot Table ใช้สำหรับทำอะไร',
+          ['จัดเรียงโครงสร้างข้อมูลใหม่เพื่อแสดงในมุมมองที่ต้องการ', 'สรุปข้อมูลจากตาราง และสร้างกราฟ', 'สร้างผลรวมข้อมูลตามเงื่อนไขที่ต้องการ', 'ถูกทุกข้อ'], 3,
+          'Pivot Table ทั้งจัดมุมมองข้อมูลใหม่ สรุปข้อมูลพร้อมสร้างกราฟ และรวมยอดตามเงื่อนไขได้ ข้อ a, b, c จึงถูกทั้งหมด'),
+        Q('ข้อใดไม่เหมาะกับการสร้าง VBA ใน Microsoft Excel',
+          ['สร้างงบการเงิน/งบทดลอง', 'สร้างแบบฟอร์มหนังสือ หัก ณ ที่จ่าย และแบบ ภ.ง.ด.1ก ให้พนักงานแต่ละคน', 'สร้างกราฟแสดงยอดขายสินค้าในแพลตฟอร์มออนไลน์ในแต่ละเดือน', 'สร้างสลิปเงินเดือนให้พนักงานแต่ละคน'], 2,
+          'ข้อ a, b, d เป็นงานซ้ำที่ต้องทำให้ทุกคนหรือทุกรอบ เหมาะกับ VBA ส่วนการสร้างกราฟยอดขายรายเดือนทำได้ง่ายกว่าด้วย Pivot Table และ Pivot Chart',
+          'ข้อนี้ตีความจากหลักว่า VBA เหมาะกับงานซ้ำที่ต้องทำเป็นชุด ถ้าเฉลยของคอร์สต่างจากนี้ ให้ยึดตามคอร์ส'),
+        Q('เมื่อคุณสร้างปุ่ม “Post” เสร็จแล้ว หากต้องการให้ปุ่มนี้ทำงานเมื่อคลิก คุณต้องทำอย่างไร?',
+          ['คลิกขวาที่ปุ่ม เลือก Properties แล้วใส่ชื่อฟังก์ชัน', 'คลิกขวาที่ปุ่ม เลือก Assign Macro แล้วเลือกฟังก์ชันที่ต้องการ', 'ไปที่เมนู Developer เลือก Macro แล้วสร้างฟังก์ชันใหม่', 'คลิกขวาที่ปุ่ม เลือก Format Control แล้วกำหนดการทำงาน'], 1,
+          'คลิกขวาที่ปุ่มแล้วเลือก Assign Macro จากนั้นเลือก Macro ที่ต้องการให้ทำงานเมื่อคลิก'),
+        Q('เมื่อคุณต้องการให้ VBA ล้างข้อมูลในช่วง A6:F99 หลังจากบันทึกเสร็จ คุณควรเขียนโค้ดอย่างไร?',
+          ['Range("A6:F99").ClearContents', 'Range("A6:F99").Delete', 'Range("A6:F99").Clear', 'Range("A6:F99").Remove'], 0,
+          'ClearContents ล้างเฉพาะค่าและสูตรในเซลล์ แต่คงรูปแบบ (Format) ไว้ จึงเหมาะกับการล้างฟอร์มบันทึกบัญชี ส่วน Delete ลบเซลล์ออกจนเซลล์ข้างเคียงเลื่อน Clear ล้างรูปแบบไปด้วย และ Range ไม่มีเมธอด Remove'),
+        Q('เมื่อสร้างโปรแกรมบัญชีใน Excel แล้วพบว่างบการเงินไม่ดุล ข้อใดไม่ช่วยแก้ปัญหานี้',
+          ['ฟังก์ชัน VBA ตรวจยอดเงิน Debit และ Credit จะต้องสมดุลกัน', 'การตรวจข้อมูลชื่อบัญชีด้วย VLOOKUP/XLOOKUP', 'สร้าง Data Validation เพื่อตรวจสอบข้อมูลจากผังบัญชี', 'กำหนด Grouping index ในงบทดลอง ให้ตรงกับงบการเงิน'], 1,
+          'การค้นชื่อบัญชีด้วย Lookup แค่ดึงชื่อมาแสดง ไม่ได้ตรวจว่ายอดสมดุลหรือไม่ ส่วนข้ออื่นช่วยตรวจยอด ตรวจรหัสบัญชี และจัดกลุ่มบัญชีให้งบถูกต้อง',
+          'ข้อนี้ตีความจากว่าตัวเลือกใดไม่เกี่ยวกับความสมดุลของยอดโดยตรง')
+      ]
+    }
+  ];
+
+  var ALL = [];
+  SETS.forEach(function (s, si) {
+    s.qs.forEach(function (q, qi) { q.id = si + '-' + qi; q.si = si; q.qi = qi; ALL.push(q); });
+  });
+  var TOTAL = ALL.length;
+
+  var S = { mode: 'practice', shuffle: true, sess: null, filter: 'all' };
+  var app = document.getElementById('app');
+  var modal = document.getElementById('modal');
+  var onYes = null;
+
+  function bestMap() {
+    try { return JSON.parse(localStorage.getItem('mockexam-best') || '{}'); } catch (e) { return {}; }
+  }
+  function saveBest(k, p) {
+    try {
+      var b = bestMap();
+      if (!(b[k] >= p)) { b[k] = p; localStorage.setItem('mockexam-best', JSON.stringify(b)); }
+    } catch (e) {}
+  }
+  function ask(msg, yes, cb) {
+    document.getElementById('mtext').textContent = msg;
+    document.getElementById('myes').textContent = yes;
+    onYes = cb;
+    modal.hidden = false;
+    document.getElementById('myes').focus();
+  }
+  document.getElementById('mno').addEventListener('click', function () { modal.hidden = true; onYes = null; });
+  document.getElementById('myes').addEventListener('click', function () {
+    modal.hidden = true;
+    var f = onYes; onYes = null;
+    if (f) f();
+  });
+
+  function shuf(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function top() { try { window.scrollTo(0, 0); } catch (e) {} }
+
+  function tbl(k) {
+    var t = TABLES[k];
+    if (!t) return '';
+    var h = '<div class="tbl-wrap"><table><caption>' + esc(t.cap) + '</caption><thead><tr>';
+    t.head.forEach(function (c, i) { h += '<th' + (t.hl === i ? ' class="hl"' : '') + '>' + esc(c) + '</th>'; });
+    h += '</tr></thead><tbody>';
+    t.rows.forEach(function (r) {
+      var kind = r.length > t.head.length ? r[r.length - 1] : '';
+      h += '<tr' + (kind ? ' class="' + kind + '"' : '') + '>';
+      for (var i = 0; i < t.head.length; i++) {
+        var cls = [];
+        if (i === 0 && !kind && k === 'p10') cls.push('ind');
+        if (t.hl === i) cls.push('hl');
+        h += '<td' + (cls.length ? ' class="' + cls.join(' ') + '"' : '') + '>' + esc(r[i]) + '</td>';
+      }
+      h += '</tr>';
+    });
+    return h + '</tbody></table></div>';
+  }
+
+  function home() {
+    S.sess = null;
+    var b = bestMap();
+    var rows = SETS.map(function (s, i) {
+      var bs = b[s.key] != null ? ' · คะแนนสูงสุด ' + b[s.key] + '%' : '';
+      return '<li><button class="set" type="button" data-act="start" data-set="' + i + '">' +
+        '<span class="num">' + (i + 1) + '</span>' +
+        '<span class="body"><span class="tag">' + esc(s.tag) + '</span><span class="name">' + esc(s.title) + '</span>' +
+        '<span class="meta">' + s.qs.length + ' ข้อ' + bs + '</span></span><span class="go">เริ่มทำ</span></button></li>';
+    }).join('');
+    var allBest = b.all != null ? ' · คะแนนสูงสุด ' + b.all + '%' : '';
+    var flagged = ALL.filter(function (q) { return q.f; }).length;
+    app.innerHTML =
+      '<header class="top"><p class="eyebrow">ข้อสอบจำลอง</p><h1>AI · Excel · Notion</h1>' +
+      '<p class="lede">' + SETS.length + ' ชุด รวม ' + TOTAL + ' ข้อ พร้อมเฉลยและคำอธิบายรายข้อ</p></header>' +
+      '<section class="opts" aria-label="ตั้งค่าการทำข้อสอบ"><fieldset><legend>โหมดการทำข้อสอบ</legend>' +
+      '<label class="seg"><input type="radio" name="mode" value="practice"' + (S.mode === 'practice' ? ' checked' : '') + '><span><b>ฝึกทำ</b><small>เห็นเฉลยทันทีหลังตอบแต่ละข้อ</small></span></label>' +
+      '<label class="seg"><input type="radio" name="mode" value="exam"' + (S.mode === 'exam' ? ' checked' : '') + '><span><b>จำลองสอบ</b><small>แก้คำตอบได้ เห็นเฉลยเมื่อส่งคำตอบ</small></span></label>' +
+      '</fieldset><label class="check"><input type="checkbox" id="shuffle"' + (S.shuffle ? ' checked' : '') + '>สลับลำดับตัวเลือกทุกครั้ง</label></section>' +
+      '<ol class="sets">' + rows + '</ol>' +
+      '<button class="btn block" type="button" data-act="start-all">สอบรวมทุกชุด ' + TOTAL + ' ข้อ' + allBest + '</button>' +
+      '<p class="note">เฉลยทั้งหมดจัดทำโดย Claude จากความรู้ทั่วไปและการอ่านโจทย์ ไม่ใช่เฉลยทางการของคอร์ส มี ' + flagged + ' ข้อที่ติดป้าย “ควรตรวจซ้ำ” เพราะมีตัวเลือกใกล้เคียงกันหรือขึ้นกับเนื้อหาในคอร์ส ถ้าเฉลยของคอร์สต่างออกไป ให้ยึดเฉลยของคอร์ส</p>';
+    top();
+  }
+
+  function begin(title, key, list) {
+    var items = list.map(function (q) {
+      var ord = [0, 1, 2, 3];
+      if (S.shuffle) shuf(ord);
+      return { q: q, order: ord, pick: null };
+    });
+    S.sess = { title: title, key: key, items: items, idx: 0, mode: S.mode, done: false };
+    quiz();
+  }
+
+  function quiz() {
+    var s = S.sess, n = s.items.length, it = s.items[s.idx], q = it.q;
+    var prac = s.mode === 'practice';
+    var locked = prac && it.pick !== null;
+    var choices = it.order.map(function (oi, pos) {
+      var cls = 'opt';
+      if (locked) { if (oi === q.a) cls += ' correct'; else if (it.pick === oi) cls += ' wrong'; }
+      else if (it.pick === oi) cls += ' picked';
+      return '<button type="button" class="' + cls + '" data-act="pick" data-oi="' + oi + '" role="radio" aria-checked="' + (it.pick === oi) + '"' + (locked ? ' disabled' : '') + '>' +
+        '<span class="key">' + (pos + 1) + '</span><span class="txt">' + esc(q.o[oi]) + '</span></button>';
+    }).join('');
+    var fb = '';
+    if (locked) {
+      var ok = it.pick === q.a;
+      fb = '<div class="fb ' + (ok ? 'ok' : 'no') + '" role="status"><span class="h">' + (ok ? 'ถูกต้อง' : 'ยังไม่ถูก คำตอบที่ถูกคือ “' + esc(q.o[q.a]) + '”') + '</span><p>' + esc(q.w) + '</p>' +
+        (q.f ? '<p class="flag"><b>ควรตรวจซ้ำ:</b> ' + esc(q.f) + '</p>' : '') + '</div>';
+    }
+    var chips = s.items.map(function (x, i) {
+      var c = 'chip';
+      if (prac && x.pick !== null) c += x.pick === x.q.a ? ' ok' : ' no';
+      else if (x.pick !== null) c += ' answered';
+      if (i === s.idx) c += ' cur';
+      return '<button type="button" class="' + c + '" data-act="go" data-i="' + i + '" aria-label="ไปข้อ ' + (i + 1) + '"' + (i === s.idx ? ' aria-current="step"' : '') + '>' + (i + 1) + '</button>';
+    }).join('');
+    var last = s.idx === n - 1;
+    var setTag = SETS[q.si];
+    app.innerHTML =
+      '<div class="bar"><div class="ttl"><small>' + esc(s.title) + '</small><b>' + esc(setTag.tag) + '</b></div>' +
+      '<button class="linkbtn" type="button" data-act="exit">ออกจากข้อสอบ</button></div>' +
+      '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + (s.idx + 1) + '"><i style="width:' + Math.round(((s.idx + 1) / n) * 100) + '%"></i></div>' +
+      '<section class="card" role="radiogroup" aria-label="ข้อ ' + (s.idx + 1) + '"><p class="qno">ข้อ ' + (s.idx + 1) + ' / ' + n + '</p>' +
+      '<h2 class="qtext">' + esc(q.q) + '</h2>' + (q.t ? tbl(q.t) : '') + '<div class="choices">' + choices + '</div>' + fb + '</section>' +
+      '<div class="nav"><button class="btn ghost" type="button" data-act="prev"' + (s.idx === 0 ? ' disabled' : '') + '>ก่อนหน้า</button>' +
+      (last ? '<button class="btn" type="button" data-act="finish">ส่งคำตอบ</button>' : '<button class="btn" type="button" data-act="next">ถัดไป</button>') + '</div>' +
+      '<div class="navi"><div class="chips">' + chips + '</div>' +
+      (last ? '' : '<div><button class="linkbtn" type="button" data-act="finish">ส่งคำตอบตอนนี้</button></div>') + '</div>';
+    top();
+  }
+
+  function finish() {
+    var s = S.sess;
+    var left = s.items.filter(function (x) { return x.pick === null; }).length;
+    var go = function () { s.done = true; S.filter = 'all'; result(); };
+    if (left > 0) ask('ยังมี ' + left + ' ข้อที่ไม่ได้ตอบ ต้องการส่งคำตอบเลยหรือไม่?', 'ส่งคำตอบ', go);
+    else go();
+  }
+
+  function result() {
+    var s = S.sess, n = s.items.length;
+    var right = s.items.filter(function (x) { return x.pick === x.q.a; }).length;
+    var pct = Math.round((right / n) * 100);
+    if (s.key) saveBest(s.key, pct);
+    var wrongRefs = s.items.filter(function (x) { return x.pick !== x.q.a; }).map(function (x) { return x.q; });
+    var msg = pct >= 80 ? 'แม่นมาก' : (pct >= 60 ? 'ดี ทบทวนข้อที่พลาดอีกนิด' : 'ลองทบทวนข้อที่พลาดแล้วทำใหม่');
+    var list = s.items.map(function (x, i) { return { x: x, i: i }; }).filter(function (r) {
+      return S.filter === 'all' ? true : r.x.pick !== r.x.q.a;
+    });
+    var rv = list.map(function (r) {
+      var x = r.x, q = x.q;
+      var st = x.pick === null ? 'skip' : (x.pick === q.a ? 'ok' : 'no');
+      var stTxt = st === 'ok' ? 'ข้อ ' + (r.i + 1) + ' ถูก' : (st === 'no' ? 'ข้อ ' + (r.i + 1) + ' ผิด' : 'ข้อ ' + (r.i + 1) + ' ไม่ได้ตอบ');
+      var h = '<article class="ri ' + st + '"><span class="st">' + stTxt + ' · ' + esc(SETS[q.si].tag) + '</span><p class="q">' + esc(q.q) + '</p>' + (q.t ? tbl(q.t) : '');
+      if (st === 'no') h += '<p class="a you"><b>คำตอบของคุณ:</b> ' + esc(q.o[x.pick]) + '</p>';
+      h += '<p class="a right"><b>เฉลย:</b> ' + esc(q.o[q.a]) + '</p><p class="w">' + esc(q.w) + '</p>' +
+        (q.f ? '<p class="flag"><b>ควรตรวจซ้ำ:</b> ' + esc(q.f) + '</p>' : '') + '</article>';
+      return h;
+    }).join('');
+    if (!rv) rv = '<p class="lede">ตอบถูกทุกข้อ ไม่มีข้อที่ต้องทบทวน</p>';
+    app.innerHTML =
+      '<header class="top"><p class="eyebrow">ผลการสอบ</p><h1>' + esc(s.title) + '</h1></header>' +
+      '<section class="score"><div class="big">' + right + '<small> / ' + n + ' ข้อ</small></div><p class="pct">' + pct + '% · ' + msg + '</p>' +
+      '<div class="actions"><button class="btn" type="button" data-act="retry">ทำใหม่ทั้งชุด</button>' +
+      (wrongRefs.length ? '<button class="btn ghost" type="button" data-act="retry-wrong">ทำเฉพาะข้อที่ผิด (' + wrongRefs.length + ')</button>' : '') +
+      '<button class="btn ghost" type="button" data-act="home">กลับหน้าหลัก</button></div></section>' +
+      '<h2>ทบทวนรายข้อ</h2><div class="tabs" role="group" aria-label="กรองรายการ">' +
+      '<button class="tab" type="button" data-act="filter" data-f="all" aria-pressed="' + (S.filter === 'all') + '">ทั้งหมด (' + n + ')</button>' +
+      '<button class="tab" type="button" data-act="filter" data-f="wrong" aria-pressed="' + (S.filter === 'wrong') + '">ผิดหรือไม่ได้ตอบ (' + wrongRefs.length + ')</button></div>' +
+      '<div class="rv">' + rv + '</div>';
+    top();
+  }
+
+  app.addEventListener('change', function (e) {
+    if (e.target.name === 'mode') S.mode = e.target.value;
+    if (e.target.id === 'shuffle') S.shuffle = e.target.checked;
+  });
+
+  app.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el || el.disabled) return;
+    var a = el.getAttribute('data-act'), s = S.sess;
+    if (a === 'start') {
+      var i = +el.getAttribute('data-set');
+      begin(SETS[i].title, SETS[i].key, SETS[i].qs);
+    } else if (a === 'start-all') {
+      begin('สอบรวมทุกชุด ' + TOTAL + ' ข้อ', 'all', ALL);
+    } else if (a === 'pick') {
+      var it = s.items[s.idx];
+      if (s.mode === 'practice' && it.pick !== null) return;
+      it.pick = +el.getAttribute('data-oi');
+      quiz();
+    } else if (a === 'next') { if (s.idx < s.items.length - 1) { s.idx++; quiz(); } }
+    else if (a === 'prev') { if (s.idx > 0) { s.idx--; quiz(); } }
+    else if (a === 'go') { s.idx = +el.getAttribute('data-i'); quiz(); }
+    else if (a === 'finish') finish();
+    else if (a === 'exit') {
+      var started = s.items.some(function (x) { return x.pick !== null; });
+      if (started) ask('ออกจากข้อสอบ? คำตอบที่ทำไว้จะหายไป', 'ออก', home); else home();
+    } else if (a === 'home') home();
+    else if (a === 'retry') {
+      begin(s.title, s.key, s.items.map(function (x) { return x.q; }));
+    } else if (a === 'retry-wrong') {
+      var w = s.items.filter(function (x) { return x.pick !== x.q.a; }).map(function (x) { return x.q; });
+      begin('ทบทวนข้อที่ผิด · ' + s.title, null, w);
+    } else if (a === 'filter') {
+      S.filter = el.getAttribute('data-f');
+      result();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var s = S.sess;
+    if (!s || s.done || !modal.hidden) return;
+    var tg = e.target && e.target.tagName;
+    if (tg === 'INPUT' || tg === 'TEXTAREA') return;
+    if (e.key >= '1' && e.key <= '4') {
+      var it = s.items[s.idx];
+      if (s.mode === 'practice' && it.pick !== null) return;
+      it.pick = it.order[+e.key - 1];
+      quiz();
+    } else if (e.key === 'ArrowRight' && s.idx < s.items.length - 1) { s.idx++; quiz(); }
+    else if (e.key === 'ArrowLeft' && s.idx > 0) { s.idx--; quiz(); }
+  });
+
+  home();
+})();
+</script>
+
+</body></html>
